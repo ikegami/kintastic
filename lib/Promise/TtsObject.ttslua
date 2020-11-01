@@ -1,0 +1,256 @@
+-- ================================================================================
+-- Promise-based version of Object methods.
+-- ================================================================================
+
+-- Modules.
+local Promise = require("kintastic/lib/Promise")
+
+-- Forward declarations for privates found at the bottom.
+local wait_for_instant_transform
+local wait_for_smooth_transform
+
+-- The module.
+local TtsObject = { }
+
+
+-- ================================================================================
+-- Public interface
+-- Thin, promise-returning wrappers.
+--
+-- Unless otherwise stated, each function returns
+-- a promise which will be fulfilled with `obj`
+-- or rejected with an error message.
+
+-- ----------------------------------------
+-- Public function TtsObject.setPosition
+
+function TtsObject.setPosition(obj, vec)
+   return Promise:new(
+      function(resolve, reject)
+         obj.setPosition(vec)
+         wait_for_instant_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.setPositionSmooth
+
+function TtsObject.setPositionSmooth(obj, vec, collide, fast)
+   return Promise:new(
+      function(resolve, reject)
+         obj.setPositionSmooth(vec, collide, fast)
+         wait_for_smooth_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.translate
+
+function TtsObject.translate(obj, vec)
+   return Promise:new(
+      function(resolve, reject)
+         obj.translate(vec)
+         wait_for_smooth_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.setRotation
+
+function TtsObject.setRotation(obj, vec)
+   return Promise:new(
+      function(resolve, reject)
+         obj.setRotation(vec)
+         wait_for_instant_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.setRotationSmooth
+
+function TtsObject.setRotationSmooth(obj, vec, collide, fast)
+   return Promise:new(
+      function(resolve, reject)
+         obj.setRotationSmooth(vec, collide, fast)
+         wait_for_smooth_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.rotate
+
+function TtsObject.rotate(obj, vec)
+   return Promise:new(
+      function(resolve, reject)
+         obj.rotate(vec)
+         wait_for_smooth_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.setScale
+
+function TtsObject.setScale(obj, vec)
+   return Promise:new(
+      function(resolve, reject)
+         obj.setScale(vec)
+         wait_for_instant_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.scale
+
+function TtsObject.scale(obj, vec)
+   return Promise:new(
+      function(resolve, reject)
+         obj.scale(vec)
+         wait_for_smooth_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.takeObject
+--
+-- This is a thin wrapper around `obj.takeObject` that returns a promise that
+-- becomes fulfilled with the spawned object once the object has been created.
+--
+-- If a `callback_function` argument is provided, the returned promise will
+-- adopt the value returned by the callback function.
+--
+-- WARNING: args will be modified.
+
+function TtsObject.takeObject(obj, args)
+   return Promise:new(
+      function(resolve, reject)
+         if args.callback_function then
+            local orig_cb = args.callback_function
+            args.callback_function = function(obj)
+               resolve(orib_cb())
+            end
+         else
+            args.callback_function = resolve
+         end
+
+         obj.takeObject(args)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+
+function TtsObject.addForce()           error("addForce isn't currently supported")           end
+function TtsObject.addTorque()          error("addTorque isn't currently supported")          end
+function TtsObject.setVelocity()        error("setVelocity isn't currently supported")        end
+function TtsObject.setAngularVelocity() error("setAngularVelocity isn't currently supported") end
+
+
+-- ================================================================================
+-- Public interface
+--
+-- Unless otherwise stated, each function returns
+-- a promise which will be fulfilled with `obj`
+-- or rejected with an error message.
+
+-- ----------------------------------------
+-- Public function TtsObject.setTransform
+--
+-- Wraps setPosition, setRotation and setScale,
+-- allowing any combination to be performed at once.
+
+function TtsObject.setTransform(obj, args)
+   return Promise:new(
+      function(resolve, reject)
+         if args.position then obj.setPosition( args.position ) end
+         if args.rotation then obj.setRotation( args.rotation ) end
+         if args.scale    then obj.setScale(    args.scale    ) end
+
+         wait_for_instant_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.setTransformSmooth
+--
+-- Wraps setPositionSmooth and setRotationSmooth,
+-- allowing any combination to be performed at once.
+
+function TtsObject.setTransformSmooth(obj, args)
+   return Promise:new(
+      function(resolve, reject)
+         if args.position then obj.setPositionSmooth( args.position, args.collide, args.fast ) end
+         if args.rotation then obj.setRotationSmooth( args.rotation, args.collide, args.fast ) end
+
+         wait_for_smooth_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ================================================================================
+-- Private helpers
+
+-- ----------------------------------------
+-- Private function wait_for_instant_transform
+--
+-- They're not quite instantaneous.
+
+function wait_for_instant_transform(obj, resolve, reject)
+   Wait.frames(
+      function()
+         if obj == nil then
+            reject("Destroyed")
+         else
+            resolve(obj)
+         end
+      end,
+      1
+   )
+end
+
+
+-- ----------------------------------------
+-- Private function wait_for_smooth_transform
+
+function wait_for_smooth_transform(obj, resolve, reject)
+   Wait.condition(
+      function()
+         if obj == nil then
+            reject("Destroyed")
+         else
+            resolve(obj)
+         end
+      end,
+      function()
+         return obj == nil or not obj.isSmoothMoving()
+      end,
+      3,
+      function()
+         reject("Timeout")
+      end
+   )
+end
+
+
+-- ================================================================================
+
+return TtsObject

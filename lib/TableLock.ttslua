@@ -1,0 +1,240 @@
+-- ================================================================================
+-- Table locking tools
+--
+-- This module is partially broken until TTS upgrades Moonsharp beyond 1.5.0.0.
+-- A bug fixed in Moonsharp 1.6.0.0 is preventing `__newindex` from being used.
+-- https://github.com/moonsharp-devs/moonsharp/issues/133
+-- Until such a time, no check is performed on writes as doing so in a loop
+-- can result in a mysterious "Unexpected LuaType Tuple" fatal error.
+-- ================================================================================
+
+-- The module.
+local TableLock = { }
+
+
+-- ----------------------------------------
+-- Disable functionality that runs afoul of a bug in Moonsharp <1.6.0.0. See module header for details.
+
+local buggy = _VERSION == "MoonSharp 1.5.0.0"
+
+
+-- ----------------------------------------
+-- Public attributes
+--
+-- TableLock.is_dev is used to determine the code is in development or in production.
+-- TableLock.on_violation controls what happens on a constraint violation.
+
+TableLock.is_dev = false                   -- editable
+TableLock.on_violation = error             -- editable
+TableLock.limited_functionality = buggy    -- read-only
+
+
+-- ----------------------------------------
+-- Public function TableLock.declare
+--
+-- Access to the list of provided names will no
+-- longer be forbidden for the provided table.
+
+function TableLock.declare(tbl, ...)
+   if not TableLock.is_dev then
+      return
+   end
+
+   local mt = getmetatable(tbl)
+   if not mt then
+      error("Table needs to have been locked at some point.")
+   end
+
+   local self = mt.___TableLock
+   if not self then
+      error("Table needs to have been locked at some point.")
+   end
+
+   local c = select("#", ...)
+   for i = 1, c do
+      local k = select(i, ...)
+      self.declared[k] = true
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function TableLock.declare_and_set
+
+function TableLock.declare_and_set(tbl, k, v)
+   TableLock.declare(tbl, k)
+   tbl[k] = v
+end
+
+
+-- ----------------------------------------
+-- Public function TableLock.lock
+--
+-- Prevents any accesses or changes to undeclared fields of a table.
+-- Fields already in the table when this is called are considered declared.
+-- Fields can also be declared using `.declare()` and `.declare_and_set()`.
+--
+-- Locking a table that's already locked has no effect.
+
+function TableLock.lock(tbl)
+   local mt = getmetatable(tbl)
+   if not mt then
+      mt = {}
+      setmetatable(tbl, mt)
+   end
+
+   local self = mt.___TableLock
+   if self then
+      local declared = self.declared
+      for k in pairs(tbl) do
+         declared[k] = true
+      end
+
+      self.enabled = true
+      return tbl
+   end
+
+   local declared = {}
+   for k in pairs(tbl) do
+      declared[k] = true
+   end
+
+   self = {
+      enabled  = true,
+      declared = declared,
+   }
+
+   local old_index    = mt.__index    or rawget
+   local old_newindex = mt.__newindex or rawset
+
+   mt.___TableLock = self
+
+   mt.__index = function(t, k)
+      if not self.declared[k] and self.enabled then
+         TableLock.on_violation("Undeclared access of " .. tostring(k))
+      end
+
+      return old_index(t, k)
+   end
+
+   if not buggy then
+      mt.__newindex = function(t, k, v)
+         if not self.declared[k] and self.enabled then
+            TableLock.on_violation("Undeclared write to " .. tostring(k))
+         end
+
+         return old_newindex(t, k, v)
+      end
+   end
+
+   return tbl
+end
+
+
+-- ----------------------------------------
+-- Public function TableLock.lock_if_dev
+--
+-- Prevents any accesses or changes to undeclared fields of a table
+-- if TableLock.is_dev is false when this function is called.
+-- If true, this function has no effect, and thus avoids the
+-- performance penalty of meta-methods in production releases.
+
+function TableLock.lock_if_dev(tbl)
+   if TableLock.is_dev then
+      TableLock.lock(tbl)
+   end
+
+   return tbl
+end
+
+
+-- ----------------------------------------
+-- Public function TableLock.rlock
+--
+-- A recursive version of TableLock.lock
+
+function TableLock.rlock(tbl)
+   TableLock.lock(tbl)
+
+   for k, v in pairs(tbl) do
+      if type(v) == "table" then
+         TableLock.rlock(v)
+      end
+   end
+
+   return tbl
+end
+
+
+-- ----------------------------------------
+-- Public function TableLock.rlock_if_dev
+--
+-- A recursive version of TableLock.lock_if_dev
+
+function TableLock.rlock_if_dev(tbl)
+   if TableLock.is_dev then
+      TableLock.rlock(tbl)
+   end
+
+   return tbl
+end
+
+
+-- ----------------------------------------
+-- Public function TableLock.unlock
+--
+-- For the extent of the call to the callback,
+-- no access to the provided table will be forbidden.
+--
+-- The first value returned by the callback is returned.
+-- This function is tolerant of exceptions in the callback.
+
+function TableLock.unlock(tbl, cb)
+   local mt = getmetatable(tbl)
+   if not mt then
+      return cb()
+   end
+
+   local self = mt.___TableLock
+   if not self then
+      return cb()
+   end
+
+   if not self.enabled then
+      return cb()
+   end
+
+   local success, rv = pcall(
+      function()
+         self.enabled = false
+         cb()
+      end
+   )
+
+   self.enabled = true
+
+   if success then
+      return rv
+   else
+      error(rv)
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function TableLock.declare_atom_symbols
+--
+-- Useful if you lock _G and use the TTS plugin for Atom.
+-- _G must be locked before calling this.
+
+function TableLock.declare_atom_symbols()
+   TableLock.declare(_G,
+      "__atom_highlight_guid",
+      "__atom_highlight_guids"
+   )
+end
+
+
+-- ================================================================================
+
+return TableLock

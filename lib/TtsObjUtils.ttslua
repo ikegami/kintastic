@@ -1,0 +1,125 @@
+-- ================================================================================
+-- TTS object utils
+-- ================================================================================
+
+-- Modules.
+local TtsMsgUtils = require("kintastic/lib/TtsMsgUtils")
+
+-- The module.
+local TtsObjUtils = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function TtsObjUtils.get_host
+
+function TtsObjUtils.resolve_guids(tbl, not_required)
+   not_required = not_required or { }
+
+   local function helper(tbl)
+      local resolved = { }
+      for k, v in pairs(tbl) do
+         local v_type = type(v)
+         if v_type == "string" then
+            local guid = v
+            local obj = getObjectFromGUID(guid)
+            if obj == nil and not not_required[guid] then
+               TtsMsgUtils.broadcast_internal_error("Can't resolve guid " .. guid)
+            end
+            resolved[k] = obj
+         elseif v_type == "table" then
+            resolved[k] = helper(v)
+         elseif v_type == "nil" then
+            resolved[k] = nil
+         else
+            TtsMsgUtils.broadcast_internal_error("Don't know how to resolve a " .. v_type)
+         end
+      end
+
+      return resolved
+   end
+
+   return helper(tbl)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObjUtils.get_abs_width()
+-- Public function TtsObjUtils.get_abs_height()
+-- Public function TtsObjUtils.get_abs_depth()
+
+function TtsObjUtils.get_abs_width(obj)  return obj.getBounds().size.x end
+function TtsObjUtils.get_abs_height(obj) return obj.getBounds().size.y end
+function TtsObjUtils.get_abs_depth(obj)  return obj.getBounds().size.z end
+
+
+-- ----------------------------------------
+-- Public function TtsObjUtils.get_top_pos
+--
+-- Returns the position which consists
+-- - the center x of the object's bounding box,
+-- - the center z of the object's bounding box, and
+-- - the highest y of the object's bounding box.
+
+function TtsObjUtils.get_top_pos(obj)
+   local bounds = obj.getBounds()
+
+   if obj.tag == "Scripting" then
+      bounds.size = obj.getScale()
+   end
+
+   local x = bounds.center.x
+   local z = bounds.center.z
+   local y = bounds.center.y + bounds.size.y / 2
+   return Vector(x, y, z)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObjUtils.get_height_to_origin
+--
+-- Returns the difference between the object's origin and the lowest y of the object's box.
+
+function TtsObjUtils.get_height_to_origin(obj)
+   local bounds = obj.getBounds()
+   return bounds.size.y / 2 + bounds.offset.y
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObjUtils.get_drop_pos
+--
+-- Returns the difference between the object's origin and the lowest y of the object's box.
+
+function TtsObjUtils.get_drop_pos(container, obj)
+   local pos = TtsObjUtils.get_top_pos(container)
+   pos.y = pos.y + TtsObjUtils.get_height_to_origin(obj)
+   return pos
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObjUtils.is_stackable
+
+function TtsObjUtils.is_stackable(obj)
+   local custom_obj = obj.getCustomObject()
+   return custom_obj and custom_obj.stackable
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObjUtils.is_stack
+--
+-- We can't just use getQuantity() because it
+-- can return a positive value for bags.
+
+function TtsObjUtils.is_stack(obj)
+   return TtsObjUtils.is_stackable(obj) and obj.getQuantity() > 1
+end
+
+
+-- ================================================================================
+
+return TtsObjUtils

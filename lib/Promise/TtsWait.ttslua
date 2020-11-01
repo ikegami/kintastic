@@ -1,0 +1,165 @@
+-- ================================================================================
+-- Promise-based version of Wait methods.
+-- ================================================================================
+
+-- Modules.
+local Promise = require("kintastic/lib/Promise")
+
+-- The module.
+local TtsWait = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function TtsWait.condition
+--
+-- Returns a promises that's fulfilled once the condition becomes true.
+-- If `timeout` is provided, the promise becomes rejected with "Timeout" once the timeout occurs.
+-- If `timeout_reason` is provided, it will be used as the rejection reason instead of "Timeout".
+
+function TtsWait.condition(cond_func, timeout, timeout_reason)
+   return Promise:new(
+      function(resolve, reject)
+         local done = false
+         local resolve = function(value)  done = true resolve(value) end
+         local reject  = function(reason) done = true reject(reason) end
+
+         if timeout == nil then
+            Wait.condition(resolve, cond_func)
+         else
+            Wait.condition(resolve, cond_func, timeout, ||reject(timeout_reason or "Timeout"))
+         end
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsWait.condition_with_cancel
+--
+-- This function is identical to TtsWait.condition except a second value is returned.
+-- It consists of a function which can be used to cancel the wait.
+-- Calling this function will result in the promise becoming rejected.
+-- The rejection reason will be the value passed to the function, or "Cancelled" if none was provided.
+--
+-- WARNING: Returns two values.
+
+function TtsWait.condition_with_cancel(cond_func, timeout, timeout_reason)
+   local canceller
+   local promise = Promise:new(
+      function(resolve, reject)
+         local done = false
+         local resolve = function(value)  done = true resolve(value) end
+         local reject  = function(reason) done = true reject(reason) end
+
+         local id
+         if timeout == nil then
+            id = Wait.condition(resolve, cond_func)
+         else
+            id = Wait.condition(resolve, cond_func, timeout, ||reject(timeout_reason or "Timeout"))
+         end
+
+         canceller = function(cancel_reason)
+            if not done then
+               Wait.stop(id)
+               reject(cancel_reason or "Cancelled")
+            end
+         end
+      end
+   )
+
+   return promise, canceller
+end
+
+
+-- ----------------------------------------
+-- Public function TtsWait.frames
+--
+-- Returns a promises that's fulfilled after `frame_count` frames.
+
+function TtsWait.frames(frame_count)
+   return Promise:new(
+      function(resolve, reject)
+         Wait.frames(resolve, frame_count)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsWait.frames_with_cancel
+--
+-- This function is identical to TtsWait.frames except a second value is returned.
+-- It consists of a function which can be used to cancel the wait.
+-- Calling this function will result in the promise becoming rejected.
+-- The rejection reason will be the value passed to the function, or "Cancelled" if none was provided.
+--
+-- WARNING: Returns two values.
+
+function TtsWait.frames_with_cancel(frame_count)
+   local canceller
+   local promise = Promise:new(
+      function(resolve, reject)
+         local id = Wait.frames(resolve, frame_count)
+
+         canceller = function(cancel_reason)
+            if not done then
+               Wait.stop(id)
+               reject(cancel_reason or "Cancelled")
+            end
+         end
+      end
+   )
+
+   return promise, canceller
+end
+
+
+-- ----------------------------------------
+-- Public function TtsWait.time
+--
+-- Returns a promises that's fulfilled after `secs` (possibly-fractional) seconds.
+
+function TtsWait.time(secs)
+   return Promise:new(
+      function(resolve, reject)
+         Wait.time(resolve, secs)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsWait.time_with_cancel
+--
+-- This function is identical to TtsWait.time except a second value is returned.
+-- It consists of a function which can be used to cancel the wait.
+-- Calling this function will result in the promise becoming rejected.
+-- The rejection reason will be the value passed to the function, or "Cancelled" if none was provided.
+--
+-- WARNING: Returns two values.
+
+function TtsWait.time_with_cancel(secs)
+   local canceller
+   local promise = Promise:new(
+      function(resolve, reject)
+         local id = Wait.time(resolve, secs)
+
+         canceller = function(cancel_reason)
+            if not done then
+               Wait.stop(id)
+               reject(cancel_reason or "Cancelled")
+            end
+         end
+      end
+   )
+
+   return promise, canceller
+end
+
+
+-- ================================================================================
+
+return TtsWait

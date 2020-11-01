@@ -1,0 +1,138 @@
+-- ================================================================================
+-- TTS player utils
+-- ================================================================================
+
+-- Modules.
+local ArrayUtils = require("kintastic/lib/ArrayUtils")
+local Iters      = require("kintastic/lib/Iters")
+
+-- Imports.
+local ivalues = Iters.ivalues
+
+-- The module.
+local TtsPlayerUtils = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function TtsPlayerUtils.get_host
+
+function TtsPlayerUtils.get_host()
+   for player in ivalues(Player.getPlayers()) do
+      if player.host then
+         return player
+      end
+   end
+
+   return nil
+end
+
+
+-- ----------------------------------------
+-- Public function TtsPlayerUtils.get_admins
+--
+-- The first will always be the host.
+
+function TtsPlayerUtils.get_admins()
+   local admins = { }
+
+   local players = Player.getPlayers()
+   for player in ivalues(players) do
+      if player.host then
+         table.insert(admins, player)
+      end
+   end
+
+   for player in ivalues(players) do
+      if player.promoted then
+         table.insert(admins, player)
+      end
+   end
+
+   return admins
+end
+
+
+-- ----------------------------------------
+-- Public function TtsPlayerUtils.get_seated_players
+--
+-- The arguments can be omitted.
+-- If omitted or nil, they default to false.
+
+function TtsPlayerUtils.get_seated_players(incl_gm, incl_spec)
+   local seated = {}
+   for player in ivalues(Player.getPlayers()) do
+      if
+         player.seated and
+         not (player.color == "Black" and not incl_gm ) and
+         not (player.color == "Grey" and not incl_spec )
+      then
+         table.insert(seated, player)
+      end
+   end
+
+   return seated
+end
+
+
+-- ----------------------------------------
+-- Public function TtsPlayerUtils.get_seated_color_names
+--
+-- The arguments can be omitted.
+-- If omitted or nil, they default to false.
+
+function TtsPlayerUtils.get_seated_color_names(incl_gm, incl_spec)
+   local seated = {}
+   for player in ivalues(Player.getPlayers()) do
+      if
+         player.seated and
+         not (player.color == "Black" and not incl_gm ) and
+         not (player.color == "Grey" and not incl_spec )
+      then
+         table.insert(seated, player.color)
+      end
+   end
+
+   return seated
+end
+
+
+-- ----------------------------------------
+-- Public function TtsPlayerUtils.keep_seated_color_names
+
+function TtsPlayerUtils.keep_seated_color_names(color_names)
+   return ArrayUtils.filter(
+      color_names,
+      |color_name|Player[color_name].seated
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsPlayerUtils.decolor
+
+function TtsPlayerUtils.decolor(name)
+   if not name then
+      return name
+   end
+
+   local pos = string.find(name, " ", 1, true)
+   if not pos then
+      return name
+   end
+
+   local color_name = string.sub(name, 1, pos-1)
+   if not Player[color_name] then
+      return name
+   end
+
+   return string.sub(name, pos+1), color_name
+end
+
+
+
+-- ================================================================================
+
+return TtsPlayerUtils

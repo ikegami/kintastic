@@ -1,0 +1,202 @@
+-- ================================================================================
+-- Array utils
+-- ================================================================================
+
+-- Modules.
+local TableUtils = require("kintastic/lib/TableUtils")
+
+-- The module.
+local ArrayUtils = { }
+
+-- Inherit functions from TableUtils.
+setmetatable(ArrayUtils, {
+   __index = TableUtils,
+})
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function ArrayUtils.push
+--
+-- Returns the value added.
+
+function ArrayUtils.push(array, val)
+   table.insert(array, val)
+   return val
+end
+
+
+-- ----------------------------------------
+-- Public function ArrayUtils.filter
+
+function ArrayUtils.filter(array, test)
+   local filtered = { }
+   for i, v in ipairs(array) do
+      if test(i, v) then
+         table.insert(filtered, v)
+      end
+   end
+
+   return filtered
+end
+
+
+-- ----------------------------------------
+-- Public function ArrayUtils.shuffle_inplace
+
+function ArrayUtils.shuffle_inplace(array)
+   for i = #array, 2, -1 do
+      local j = math.random(i)
+      array[i], array[j] = array[j], array[i]
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function ArrayUtils.shuffle
+
+function ArrayUtils.shuffle(array)
+   local copy = { }
+   for i = 1, #array do
+      copy[i] = array[i]
+   end
+
+   ArrayUtils.shuffle_inplace(copy)
+   return copy
+end
+
+
+-- ----------------------------------------
+-- Public function ArrayUtils.make_set
+
+function ArrayUtils.make_set(array, key_gen, val_gen)
+   if key_gen == nil then
+      key_gen = function(_) return _ end
+   end
+
+   if val_gen == nil then
+      val_gen = function(_) return true end
+   end
+
+   local set = {}
+   for i, v in ipairs(array) do
+      set[key_gen(v)] = val_gen(v)
+   end
+
+   return set
+end
+
+
+-- ----------------------------------------
+-- Public function ArrayUtils.format_item_list
+
+function ArrayUtils.format_item_list(array, locale)
+   local n = #array
+   if n == 0 then
+      return "none"
+   end
+
+   if n == 1 then
+      return array[1]
+   end
+
+   local s = array[1]
+   for i = 2, n-1 do
+      s = s .. ", " .. array[i]
+   end
+
+   return s .. " and " .. array[n]
+end
+
+
+-- ----------------------------------------
+-- Public function ArrayUtils.ivalues
+--
+-- For when you don't need the index.
+--
+-- Usage:
+--    for value in ArrayUtils.ivalues(array) do ... end
+
+function ArrayUtils.ivalues(array)
+   local i = 0
+   local n = #array
+   return function()
+      if i < n then
+         i = i + 1
+         return array[i]
+      end
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function ArrayUtils.ipairs_desc
+--
+-- Usage:
+--    for index, value in ArrayUtils.ipairs_desc(array) do ... end
+
+function ArrayUtils.ipairs_desc(array)
+   local i = #array + 1
+   return function()
+      if i > 1 then
+         i = i - 1
+         return i, array[i]
+      end
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function ArrayUtils.ivalues_desc
+--
+-- Usage:
+--    for value in ArrayUtils.ivalues_desc(array) do ... end
+
+function ArrayUtils.ivalues_desc(array)
+   local i = #array + 1
+   return function()
+      if i > 1 then
+         i = i - 1
+         return array[i]
+      end
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function ArrayUtils.sorted_ivalues
+
+-- Iterates over an array in ascending value order (default) or in a user-defined order.
+--
+-- Usage:
+--    for value in ArrayUtils.sorted_ivalues(array)               do ... end
+--    for value in ArrayUtils.sorted_ivalues(array, compare_func) do ... end
+--
+-- Example:
+--
+--    local compare = function(a, b)
+--       return a.name < b.name
+--    end
+--
+--    for character in ArrayUtils.sorted_ivalues(characters, compare) do
+--       ...
+--    end
+
+function ArrayUtils.sorted_ivalues(array, compare)
+   local copy = ArrayUtils.copy(array)
+   table.sort(copy, compare)
+   local i = 0         -- Iterator state
+   return function()   -- Iterator function
+      i = i + 1
+      if copy[i] ~= nil then
+         return copy[i]
+      end
+   end
+end
+
+
+-- ================================================================================
+
+return ArrayUtils

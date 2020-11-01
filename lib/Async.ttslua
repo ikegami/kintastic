@@ -1,0 +1,77 @@
+-- ================================================================================
+-- Asynchronous Execution
+-- ================================================================================
+
+-- Modules.
+local Queue       = require("kintastic/lib/Queue")
+local TtsMsgUtils = require("kintastic/lib/TtsMsgUtils")
+
+-- Forward declarations for privates found at the bottom.
+local initiated
+local queue
+local async_run
+
+-- The module.
+local Async = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function Async.async
+--
+-- Runs the provided function asynchronously. Extra arguments passed to `async`
+-- will be passed to the function.
+--
+-- WARNING: A nil argument may cause subsequent arguments to be ignored.
+--
+-- On execution, the function's stack will be empty except for "platform code".
+-- As such, its execution won't start immediately, but shortly after.
+
+function Async.async(cb, ...)
+   queue:enqueue({ cb, ... })
+   if not initiated then
+      initiated = true
+      Wait.frames(async_run, 0)
+   end
+end
+
+
+-- ================================================================================
+-- Privates
+
+initiated = false
+queue = Queue:new()
+
+function async_run()
+   initiated = false
+   while not queue:is_empty() do
+      local item = queue:dequeue()
+      local success, rv = pcall(
+         function()
+            -- Do absolutely everything with user data inside of a pcall.
+            item[1](unpack(item, 2))
+         end
+      )
+
+      if not success then
+         -- `rv` is also user data.
+         local success = pcall(
+            function()
+               -- ~~~ XXX Handle tables of error messages.
+               TtsMsgUtils.broadcast_error("Error in async callback: " .. rv)
+            end
+         )
+
+         if not success then
+            TtsMsgUtils.broadcast_error("Error in async callback")
+         end
+      end
+   end
+end
+
+
+-- ================================================================================
+
+return Async

@@ -1,0 +1,77 @@
+-- ================================================================================
+-- Utils to aid placement of objects.
+-- ================================================================================
+
+-- The module.
+local GridUtils = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function GridUtils.create_rect_grid
+--
+-- Example:
+--    https://cdn.discordapp.com/attachments/174287376158294016/763892988383592468/unknown.png
+--    local grid = GridUtils.create_rect_grid({
+--       rows      = 2,
+--       cols      = 5,
+--       vert_dist = 4.0,
+--       horz_dist = 3.0,
+--       position  = Vector({ -4, 1, 0 }),
+--       rotation  = Vector({ 0, -30, 0 }),
+--    })
+--
+--    https://cdn.discordapp.com/attachments/174287376158294016/763902878267605002/unknown.png
+--    local grid = GridUtils.create_rect_grid({
+--       rows      = 2,
+--       cols      = 5,
+--       vert_dist = 4.0,
+--       horz_dist = 3.0,
+--       position  = Vector({ -4, 1, 0 }),
+--       rotation  = Vector({ -45, -30, 0 }),
+--    })
+
+function GridUtils.create_rect_grid(params)
+   local num_rows  = params.rows
+   local num_cols  = params.cols
+   local vert_dist = params.vert_dist
+   local horz_dist = params.horz_dist
+   local origin    = Vector( params.position or { 0, 0, 0 } )   -- Optional
+   local rotation  = Vector( params.rotation or { 0, 0, 0 } )   -- Optional
+
+   local vert_displ =
+      Vector({ 0, 0, -vert_dist })
+      :rotateOver('z', rotation.z)
+      :rotateOver('x', rotation.x)
+      :rotateOver('y', rotation.y)
+   local horz_displ =
+      Vector({ horz_dist, 0, 0 })
+      :rotateOver('z', rotation.z)
+      :rotateOver('x', rotation.x)
+      :rotateOver('y', rotation.y)
+
+   origin
+      :sub( vert_displ * ( num_rows / 2 - 0.5 ) )
+      :sub( horz_displ * ( num_cols / 2 - 0.5 ) )
+
+   local grid = { }
+   for row_ofs = 0, num_rows-1 do
+      for col_ofs = 0, num_cols-1 do
+         table.insert(grid, {
+            position = horz_displ:copy():scale(col_ofs):add(origin)
+            rotation = rotation:copy(),
+         })
+      end
+
+      origin:add(vert_displ)
+   end
+
+   return grid
+end
+
+
+-- ================================================================================
+
+return GridUtils

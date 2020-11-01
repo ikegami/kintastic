@@ -1,0 +1,79 @@
+-- ================================================================================
+-- Queue class
+-- ================================================================================
+
+-- The class.
+local Queue = { }
+
+Queue.mt = {
+   __index = Queue,
+}
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public constructor Queue:new
+--
+-- Usage:
+--    local q = Queue:new()
+
+function Queue.new(class)
+   local self = setmetatable({}, class.mt)
+
+   self.head = nil
+   self.tail = nil
+
+   return self
+end
+
+
+-- ----------------------------------------
+-- Public instance method Queue:enqueue
+
+function Queue:enqueue(value)
+   local node = {
+      value = value,
+      next  = nil,
+   }
+
+   if self.tail then
+      self.tail.next = node
+   else
+      self.head = node
+   end
+
+   self.tail = node
+end
+
+
+-- ----------------------------------------
+-- Public instance method Queue:is_empty
+
+function Queue:is_empty()
+   return self.head == nil
+end
+
+
+-- ----------------------------------------
+-- Public instance method Queue:dequeue
+
+function Queue:dequeue()
+   if self.head == nil then
+      return
+   end
+
+   local value = self.head.value
+   self.head = self.head.next
+   if not self.head then
+      self.tail = nil
+   end
+
+   return value
+end
+
+
+-- ================================================================================
+
+return Queue

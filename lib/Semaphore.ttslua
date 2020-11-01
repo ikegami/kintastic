@@ -1,0 +1,181 @@
+-- ================================================================================
+-- Semaphore class
+--
+-- Example:
+--
+--    local sem = Semaphore:new(1)
+--
+--    while ... do
+--       sem:adjust(-1)
+--       bag.takeObject({
+--          ...
+--          callback_function = function()
+--             ...
+--             sem:up()
+--          end
+--       })
+--    end
+--
+--    local on_complete = function() ... end
+--
+--    -- Only call on_complete once all the objects have been created.
+--    sem.down(on_complete)
+--
+--
+-- Example:
+--
+--    local sem = Semaphore:new(1)
+--
+--    while ... do
+--       sem:adjust(-1)
+--       bag.takeObject({
+--          ...
+--          callback_function = sem.raiser,
+--       })
+--    end
+--
+--    local on_complete = function() ... end
+--
+--    -- Only call on_complete once all the objects have been created.
+--    sem.down(on_complete)
+--
+--
+-- Example:
+--
+--    local sem = Semaphore:new(1)
+--
+--    while ... do
+--       bag.takeObject({
+--          ...
+--          callback_function = sem:adjust(-1),
+--       })
+--    end
+--
+--    local on_complete = function() ... end
+--
+--    -- Only call on_complete once all the objects have been created.
+--    sem.down(on_complete)
+--
+-- ================================================================================
+
+-- Modules.
+local Queue = require("kintastic/lib/Queue")
+
+-- The class.
+local Semaphore = { }
+
+Semaphore.mt = {
+   __index = Semaphore,
+}
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public constructor Semaphore::new
+--
+-- Usage:
+--    local sem = Semaphore:new(value)
+
+function Semaphore.new(class, value)
+   local self = setmetatable({}, class.mt)
+
+   self.value = value
+   self.wait_list = Queue:new()
+
+   self.raiser = function()
+      self:up()
+   end
+
+   return self
+end
+
+
+-- ----------------------------------------
+-- Public instance method Semaphore:up
+--
+-- Usage:
+--    sem:up()
+--    sem:up(1)  -- Same
+--
+-- Increases the value of the semaphore by the specified amount.
+--
+-- The amount must be a positive integer.
+-- Alterantively, the amount may be omitted, defaulting to 1.
+
+function Semaphore:up(amount)
+   amount = amount or 1
+   if amount < 1 then
+      error("The amount must be positive.")
+   end
+
+   self:adjust(amount)
+end
+
+
+-- ----------------------------------------
+-- Public instance method Semaphore:down
+--
+-- Usage:
+--    local cb = function() ... end
+--    sem:down(cb)
+--    sem:down(cb, 1)  -- Same
+--
+-- Once the the value of the sempahore becomes positive,
+-- (if it's not already), the value will be reduced by the
+-- specified amount and the provided function will be called.
+--
+-- The amount must be a positive integer.
+-- Alterantively, the amount may be omitted, defaulting to 1.
+--
+-- XXX The callback should probably be called asynchronously,
+-- with the callstack containing nothing by "platform code".
+--
+-- XXX Should support amounts larger than 1.
+
+function Semaphore:down(cb, amount)
+   amount = amount or 1
+   if amount < 1 then
+      error("The amount must be positive.")
+   end
+   if amount > 1 then
+      error("Amounts larger than 1 aren't currently supported.")
+   end
+
+   if self.value < 1 then
+      self.wait_list:enqueue(cb)
+      return
+   end
+
+   self.value = self.value - 1
+   cb()
+end
+
+
+-- ----------------------------------------
+-- Public instance method Semaphore:adjust
+--
+-- Immediately adjusts the value of the semaphore by `amount`.
+-- `amount` can be any positive or negative integer (or zero).
+--
+-- If `amount` is negative, returns a callback that calls
+-- self:up() once, regardless of the value of `amount`.
+
+function Semaphore:adjust(amount)
+   self.value = self.value + amount
+   while self.value > 0 and not self.wait_list:is_empty() do
+      local cb = self.wait_list:dequeue()
+      self.value = self.value - 1
+      cb()
+   end
+
+   if amount < 0 then
+      return self.raiser
+   end
+end
+
+
+-- ================================================================================
+
+return Semaphore

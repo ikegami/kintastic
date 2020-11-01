@@ -1,0 +1,101 @@
+-- ================================================================================
+-- TTS messaging utils
+-- ================================================================================
+
+-- Modules.
+local TtsPlayerUtils = require("kintastic/lib/TtsPlayerUtils")
+
+-- The module.
+local TtsMsgUtils = { }
+
+
+-- ================================================================================
+-- Constants
+
+local ERROR_COLOR = Color.Red
+local INFO_COLOR  = Color.White
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function TtsMsgUtils.broadcast_info
+
+function TtsMsgUtils.broadcast_info(msg)
+   broadcastToAll(msg, INFO_COLOR)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsMsgUtils.print_info
+
+function TtsMsgUtils.print_info(msg)
+   printToAll(msg, INFO_COLOR)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsMsgUtils.broadcast_error
+
+-- receiver_color_name is optional.
+function TtsMsgUtils.broadcast_error(msg, receiver_color_name)
+   if receiver_color_name then
+      broadcastToColor(msg, receiver_color_name, ERROR_COLOR)
+   else
+      broadcastToAll(msg, ERROR_COLOR)
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function TtsMsgUtils.broadcast_error_to_host
+
+function TtsMsgUtils.broadcast_error_to_host(msg)
+   local host = TtsPlayerUtils.get_host()
+   broadcastToColor(msg, host.color, ERROR_COLOR)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsMsgUtils.broadcast_internal_error
+
+function TtsMsgUtils.broadcast_internal_error(msg)
+   broadcastToAll("Internal error: " .. msg, ERROR_COLOR)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsMsgUtils.broadcast_internal_error_to_host
+
+function TtsMsgUtils.broadcast_internal_error_to_host(msg)
+   local host = TtsPlayerUtils.get_host()
+   broadcastToColor("Internal error: " .. msg, host.color, ERROR_COLOR)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsMsgUtils.announce_player_turn
+
+function TtsMsgUtils.announce_player_turn(color_name)
+   local player = Player[color_name]
+   if player.seated then
+      Turns.enable = false
+      Turns.reverse_order = false
+      Turns.skip_empty_hands = false
+      Turns.pass_turns = false
+      Turns.disable_interactations = false
+      Turns.type = 2   -- Custom
+      Turns.order = { color_name }
+      Turns.turn_color = color_name
+      Turns.enable = true
+      Turns.enable = false
+   else
+      printToAll(color_name .. "’s turn.", color_name)
+   end
+end
+
+
+-- ================================================================================
+
+return TtsMsgUtils

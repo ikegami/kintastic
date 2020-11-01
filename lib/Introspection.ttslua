@@ -1,0 +1,81 @@
+-- ================================================================================
+-- Introspection utils
+-- ================================================================================
+
+-- The module.
+local Introspection = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function Introspection.get_class
+
+function Introspection.get_class(_)
+   if type(_) ~= "table" then
+      return nil
+   end
+
+   local mt = getmetatable(_)
+   if not mt then
+      return nil
+   end
+
+   local class = mt.__index
+
+   if type(class) ~= "table" then
+      return nil
+   end
+
+   return class
+end
+
+
+-- ----------------------------------------
+-- Public function Introspection.is_instance_of
+--
+-- Returns true if the argument `_` is `class`,
+-- a subclass of `class`, an instance of `class`,
+-- or an instance of a subclass of `class`.
+
+function Introspection.is_instance_of(_, class)
+   while _ ~= class do
+      if type(_) ~= "table" then
+         return false
+      end
+
+      local mt = getmetatable(_)
+      if not mt then
+         return false
+      end
+
+      _ = mt.__index
+   end
+
+   return true
+end
+
+
+-- ----------------------------------------
+-- Public function Introspection.is_callable
+
+function Introspection.is_callable(_)
+   while true do
+      local t = type(_)
+      if t == "function" then return true  end
+      if t == "table"    then return false end
+
+      local mt = getmetatable(_)
+      if not mt then
+         return false
+      end
+
+      _ = mt.__call
+   end
+end
+
+
+-- ================================================================================
+
+return Introspection

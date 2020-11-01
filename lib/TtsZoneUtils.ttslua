@@ -1,0 +1,64 @@
+-- ================================================================================
+-- TTS zone utils
+-- ================================================================================
+
+-- Modules.
+local Introspection = require("kintastic/lib/Introspection")
+local Iters         = require("kintastic/lib/Iters")
+
+-- Imports.
+local is_callable = Introspection.is_callable
+local ivalues     = Iters.ivalues
+
+-- The module.
+local TtsZoneUtils = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function TtsZoneUtils.does_zone_contain_object
+
+function TtsZoneUtils.does_zone_contain_object(zone, obj)
+   for zone_obj in ivalues(zone.getObjects()) do
+      if zone_obj == obj then
+         return true
+      end
+   end
+
+   return false
+end
+
+
+-- ----------------------------------------
+-- Public function TtsZoneUtils.find_zone
+--
+-- Find the zone that contains an object.
+--
+-- Usage:
+--    local i, zone = TtsZoneUtils.find_zone(zones, obj_to_find)
+--    local i, zone = TtsZoneUtils.find_zone(zones, |obj|obj==obj_to_find)
+
+function TtsZoneUtils.find_zone(zones, test)
+   if not is_callable(test) then
+      test = function(obj)
+         return obj == test
+      end
+   end
+
+   for i, zone in ipairs(zones) do
+      for obj in ivalues(zone.getObjects()) do
+         if test(obj) then
+            return i, zone
+         end
+      end
+   end
+
+   return
+end
+
+
+-- ================================================================================
+
+return TtsZoneUtils

@@ -1,0 +1,84 @@
+-- ================================================================================
+-- Promise-based version of base methods.
+-- ================================================================================
+
+-- Modules.
+local Promise    = require("kintastic/lib/Promise")
+local TableUtils = require("kintastic/lib/TableUtils")
+
+-- The module.
+local TtsBase = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function TtsBase.spawnObjectJSON
+--
+-- This is a thin wrapper around `spawnObjectJSON` that returns a promise that
+--  becomes fulfilled with the spawned object once the object has been created.
+--
+-- If a `callback_function` argument is provided, the returned promise will
+-- adopt the value returned by the callback function.
+--
+-- You may replace the global spawnObjectJSON with this function.
+
+local native_spawn_object_json = spawnObjectJSON
+
+function TtsBase.spawnObjectJSON(args)
+   return Promise:new(
+      function(resolve, reject)
+         args = TableUtils.copy(args)
+
+         if args.callback_function then
+            local orig_cb = args.callback_function
+            args.callback_function = function(obj)
+               resolve(orib_cb())
+            end
+         else
+            args.callback_function = resolve
+         end
+
+         native_spawn_object_json(args)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsBase.spawnObjectData
+--
+-- This is a thin wrapper around `spawnObjectData` that returns a promise that
+--  becomes fulfilled with the spawned object once the object has been created.
+--
+-- If a `callback_function` argument is provided, the returned promise will
+-- adopt the value returned by the callback function.
+--
+-- You may replace the global spawnObjectData with this function.
+
+local native_spawn_object_data = spawnObjectData
+
+function TtsBase.spawnObjectData(args)
+   return Promise:new(
+      function(resolve, reject)
+         args = TableUtils.copy(args)
+
+         if args.callback_function then
+            local orig_cb = args.callback_function
+            args.callback_function = function(obj)
+               resolve(orib_cb())
+            end
+         else
+            args.callback_function = resolve
+         end
+
+         native_spawn_object_data(args)
+      end
+   )
+end
+
+
+-- ================================================================================
+
+return TtsBase

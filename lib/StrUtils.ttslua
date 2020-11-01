@@ -1,0 +1,30 @@
+-- ================================================================================
+-- String utils
+-- ================================================================================
+
+-- The module.
+local StrUtils = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function StrUtils.starts_with
+
+function StrUtils.starts_with(str, substr)
+   return substr == "" or str:sub(1, #substr) == substr
+end
+
+
+-- ----------------------------------------
+-- Public function StrUtils.ends_with
+
+function StrUtils.ends_with(str, substr)
+   return substr == "" or str:sub(-#substr) == substr
+end
+
+
+-- ================================================================================
+
+return StrUtils

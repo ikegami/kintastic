@@ -1,0 +1,180 @@
+-- ================================================================================
+-- Dict utils
+-- ================================================================================
+
+-- Modules.
+local TableUtils = require("kintastic/lib/TableUtils")
+
+-- The module.
+local DictUtils = { }
+
+-- Inherit functions from TableUtils.
+setmetatable(DictUtils, {
+   __index = TableUtils,
+})
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function DictUtils.get_keys
+
+function DictUtils.get_keys(dict)
+   local ks = { }
+   for k in pairs(dict) do table.insert(ks, k) end
+   return ks
+end
+
+
+-- ----------------------------------------
+-- Public function DictUtils.get_values
+
+function DictUtils.get_values(dict)
+   local vs = { }
+   for k, v in pairs(dict) do table.insert(vs, v) end
+   return vs
+end
+
+
+-- ----------------------------------------
+-- Public function DictUtils.map_values
+--
+-- Equivalent to TableUtils.map(DictUtils.get_values(tbl, cb))
+
+function DictUtils.map_values(tbl, cb)
+   local mapped = { }
+   for k, v in pairs(tbl) do
+      table.insert(mapped, cb(v))
+   end
+
+   return mapped
+end
+
+
+-- ----------------------------------------
+-- Public function DictUtils.select
+
+function DictUtils.select(dict, test)
+   local selected = { }
+   for k, v in pairs(dict) do
+      if test(k, v) then
+         selected[k] = v
+      end
+   end
+
+   return selected
+end
+
+
+-- ----------------------------------------
+-- Public function DictUtils.merge
+--
+-- Adds the elements of `tbl2` to `tbl1`.
+-- Shallow copy.
+-- Returns `tbl1`.
+
+function DictUtils.merge(tbl1, tbl2)
+   for k, v in pairs(tbl2) do
+      tbl1[k] = v
+   end
+
+   return tbl1
+end
+
+
+-- ----------------------------------------
+-- Public function DictUtils.rmerge
+--
+-- Recursive version of DictUtils.merge.
+-- `tbl1` controls the recursion.
+-- Returns `tbl1`.
+
+function DictUtils.rmerge(tbl1, tbl2)
+   for k, v in pairs(tbl2) do
+      if type(tbl1[k]) == "table" then
+         DictUtils.rmerge(tbl1[k], v)
+      else
+         tbl1[k] = v
+      end
+   end
+
+   return tbl1
+end
+
+
+-- ----------------------------------------
+-- Public function DictUtils.keys
+--
+-- For when you don't need the value.
+--
+-- Usage:
+--    for value in DictUtils.keys(dict) do ... end
+
+function DictUtils.keys(dict)
+   local i = nil
+   return function()
+      local v
+      i, v = next(dict, i)
+      if i then
+         return i
+      end
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function DictUtils.values
+--
+-- For when you don't need the key.
+--
+-- Usage:
+--    for value in DictUtils.values(dict) do ... end
+
+function DictUtils.values(dict)
+   local i = nil
+   return function()
+      local v
+      i, v = next(dict, i)
+      if i then
+         return v
+      end
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function DictUtils.sorted_pairs
+
+-- Iterates over a dictionary in ascending key order (default) or in a user-defined order.
+--
+-- Usage:
+--    for key, value in DictUtils.sorted_pairs(dict)               do ... end
+--    for key, value in DictUtils.sorted_pairs(dict, compare_func) do ... end
+--
+-- Example:
+--
+--    local compare = function(a, b)
+--       return characters[a].name < characters[b].name
+--    end
+--
+--    for id, character in DictUtils.sorted_pairs(characters, compare) do
+--       ...
+--    end
+
+function DictUtils.sorted_pairs(dict, compare)
+   local ks = get_keys(dict)
+   table.sort(ks, compare)
+   local i = 0         -- Iterator state
+   return function()   -- Iterator function
+      i = i + 1
+      if ks[i] ~= nil then
+         return ks[i], dict[ks[i]]
+      end
+   end
+end
+
+
+-- ================================================================================
+
+return DictUtils

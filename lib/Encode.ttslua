@@ -1,0 +1,105 @@
+-- ================================================================================
+-- Character encoding/decoding utils
+-- ================================================================================
+
+-- The module.
+local Encode = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function Encode.string_to_code_points
+--
+-- The interpreter is only capabable of handling 16-bit characters,
+-- so code points above U+FFFF appear in strings as surrogate pairs.
+-- This function returns an iterator that returns the string as code points.
+
+function Encode.string_to_code_points(s)
+   local i = 0
+   local n = #s
+   return function()
+      if s == nil or i >= n then
+         return
+      end
+
+      i = i + 1
+      local cp, cp2 = string.unicode(s, i, i+1)
+
+      if cp < 0xD800 then
+         -- Not a surrogate.
+         return cp
+      elseif cp < 0xDC00 then
+         -- High surrogate.
+         if cp2 == nil or cp2 < 0xDC00 or cp2 >= 0xE000 then
+            -- High surrogate without following low surrogate.
+            return 0xFFFD
+         end
+
+         i = i + 1
+         return ( cp % 0x400 ) * 0x400 + ( cp2 % 0x400 ) + 0x10000
+      elseif cp < 0xE000 then
+         -- Low surrogate without preceding high surrogate.
+         return 0xFFFD
+      elseif cp < 0x10000
+         -- Not a surrogate.
+         return cp
+      elseif cp < 0x110000
+         -- Just in case!
+         return cp
+      else
+         -- Outside of Unicode.
+         return 0xFFFD
+      end
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function Encode.encode_utf8
+
+function Encode.encode_utf8(s)
+   local encoded = ""
+   for i = 1 to #s do
+      if cp < 0x80 then
+         encoded = encoded .. string.char(cp)
+      elseif cp < 0x800 then
+         -- 110xxxxx 10xxxxxx
+         encoded = encoded .. string.char(
+            0xC0 + ( c / 0x40        ),
+            0x80 + ( c        % 0x40 )
+         )
+      elseif cp < 0x10000 then
+         -- 1110xxxx 10xxxxxx 10xxxxxx
+         encoded = encoded .. string.char(
+            0xE0 + ( c / 0x1000        ),
+            0x80 + ( c /   0x40 % 0x40 ),
+            0x80 + ( c          % 0x40 )
+         )
+      elseif cp < 0x110000 then
+         -- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+         encoded = encoded .. string.char(
+            0xF0 + ( c / 0x40000        ),
+            0x80 + ( c /  0x1000 % 0x40 ),
+            0x80 + ( c /    0x40 % 0x40 ),
+            0x80 + ( c           % 0x40 )
+         )
+      end
+   end
+
+   return encoded
+end
+
+
+-- ----------------------------------------
+-- Public function Encode.decode_utf8
+
+function Encode.decode_utf8(s)
+   error("Not yet implemented")  -- TODO
+end
+
+
+-- ================================================================================
+
+return Encode

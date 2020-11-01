@@ -1,0 +1,42 @@
+-- ================================================================================
+-- Table utils
+-- ================================================================================
+
+-- The module.
+local TableUtils = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function TableUtils.copy
+--
+-- Shallow copy.
+
+function TableUtils.copy(tbl)
+   local copy = { }
+   for k, v in pairs(tbl) do
+      copy[k] = v
+   end
+
+   return copy
+end
+
+
+-- ----------------------------------------
+-- Public function TableUtils.map
+
+function TableUtils.map(tbl, cb)
+   local mapped = { }
+   for k, v in pairs(tbl) do
+      mapped[k] = cb(v)
+   end
+
+   return mapped
+end
+
+
+-- ================================================================================
+
+return TableUtils

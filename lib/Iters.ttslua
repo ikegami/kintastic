@@ -1,0 +1,60 @@
+-- ================================================================================
+-- Iters
+-- ================================================================================
+
+-- Modules.
+local ArrayUtils = require("kintastic/lib/ArrayUtils")
+local DictUtils  = require("kintastic/lib/DictUtils")
+
+-- The module.
+local Iters = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function Iters.ivalues
+
+Iters.ivalues = ArrayUtils.ivalues
+
+
+-- ----------------------------------------
+-- Public function Iters.ipairs_desc
+
+Iters.ipairs_desc = ArrayUtils.ipairs_desc
+
+
+-- ----------------------------------------
+-- Public function Iters.ivalues_desc
+
+Iters.ivalues_desc = ArrayUtils.ivalues_desc
+
+
+-- ----------------------------------------
+-- Public function Iters.sorted_values
+
+Iters.sorted_values = ArrayUtils.sorted_values
+
+
+-- ----------------------------------------
+-- Public function Iters.keys
+
+Iters.keys = DictUtils.keys
+
+
+-- ----------------------------------------
+-- Public function Iters.values
+
+Iters.values = DictUtils.values
+
+
+-- ----------------------------------------
+-- Public function Iters.sorted_pairs
+
+Iters.sorted_pairs = DictUtils.sorted_pairs
+
+
+-- ================================================================================
+
+return Iters

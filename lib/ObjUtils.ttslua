@@ -1,0 +1,39 @@
+-- ================================================================================
+-- Object utils
+-- ================================================================================
+
+-- Modules.
+local Introspection = require("kintastic/lib/Introspection")
+
+-- The module.
+local ObjUtils = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function ObjUtils.is_instance_of
+
+ObjUtils.is_instance_of = Introspection.is_instance_of
+
+
+-- ----------------------------------------
+-- Public function ObjUtils.get_class
+
+ObjUtils.get_class = Introspection.get_class
+
+
+-- ----------------------------------------
+-- Public function ObjUtils.make_delegate
+
+function ObjUtils.make_delegate(o, method_name, ...)
+   return function()
+      o[method_name](o, ...)
+   end
+end
+
+
+-- ================================================================================
+
+return ObjUtils

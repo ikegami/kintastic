@@ -1,0 +1,106 @@
+-- ================================================================================
+-- Constant tables
+--
+-- This module is partially broken until TTS upgrades Moonsharp beyond 1.5.0.0.
+-- A bug fixed in Moonsharp 1.6.0.0 is preventing `__newindex` from being used.
+-- https://github.com/moonsharp-devs/moonsharp/issues/133
+-- Until such a time, assigning to a member of a constant table inside a loop
+-- can result in a mysterious "Unexpected LuaType Tuple" fatal error.
+-- ================================================================================
+
+-- The module.
+local Const = { }
+
+-- Forward declarations for privates found at the bottom.
+local handle_violation
+
+
+-- ----------------------------------------
+-- Public attributes
+--
+-- Const.is_dev is used to determine the code is in development or in production.
+-- Const.on_violation controls what happens on a constraint violation.
+
+Const.is_dev = false         -- editable
+Const.on_violation = error   -- editable
+
+
+-- ----------------------------------------
+-- Public function Const.const
+--
+-- Prevents any changes or additions to the provided table.
+
+function Const.const(tbl)
+   local mt = getmetatable(tbl)
+   if not mt then
+      mt = {}
+      setmetatable(tbl, mt)
+   end
+
+   local self = mt.___Const
+   if self then
+      return tbl
+   end
+
+   self = {}
+
+   mt.___Const = self
+
+   mt.__newindex = function(t, k, v)
+      Const.on_violation("Can't modify constant table.")
+   end
+
+   return tbl
+end
+
+
+-- ----------------------------------------
+-- Public function Const.const_if_dev
+--
+-- Prevents any changes or additions to the provided table
+-- if Const.is_dev is false when this function is called.
+-- If true, this function has no effect, and thus avoids the
+-- performance penalty of meta-methods in production releases.
+
+function Const.const_if_dev(tbl)
+   if Const.is_dev then
+      Const.const(tbl)
+   end
+
+   return tbl
+end
+
+
+-- ----------------------------------------
+-- Public function Const.rconst
+--
+-- A recursive version of Const.const
+
+function Const.rconst(tbl)
+   for k, v in pairs(tbl) do
+      if type(v) == "table" then
+         Const.rconst(v)
+      end
+   end
+
+   return Const.const(tbl)
+end
+
+
+-- ----------------------------------------
+-- Public function Const.rconst_if_dev
+--
+-- A recursive version of Const.const_if_dev
+
+function Const.rconst_if_dev(tbl)
+   if Const.is_dev then
+      Const.rconst(tbl)
+   end
+
+   return tbl
+end
+
+
+-- ================================================================================
+
+return Const
