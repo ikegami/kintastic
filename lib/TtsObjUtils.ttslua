@@ -49,6 +49,8 @@ end
 -- Public function TtsObjUtils.get_abs_width()
 -- Public function TtsObjUtils.get_abs_height()
 -- Public function TtsObjUtils.get_abs_depth()
+--
+-- The results are based on the object's current orientation.
 
 function TtsObjUtils.get_abs_width(obj)  return obj.getBounds().size.x end
 function TtsObjUtils.get_abs_height(obj) return obj.getBounds().size.y end
@@ -62,6 +64,8 @@ function TtsObjUtils.get_abs_depth(obj)  return obj.getBounds().size.z end
 -- - the center x of the object's bounding box,
 -- - the center z of the object's bounding box, and
 -- - the highest y of the object's bounding box.
+--
+-- The result is based on the object's current orientation.
 
 function TtsObjUtils.get_top_pos(obj)
    local bounds = obj.getBounds()
@@ -81,6 +85,8 @@ end
 -- Public function TtsObjUtils.get_height_to_origin
 --
 -- Returns the difference between the object's origin and the lowest y of the object's box.
+--
+-- The result is based on the object's current orientation.
 
 function TtsObjUtils.get_height_to_origin(obj)
    local bounds = obj.getBounds()
@@ -92,6 +98,8 @@ end
 -- Public function TtsObjUtils.get_drop_pos
 --
 -- Returns the difference between the object's origin and the lowest y of the object's box.
+--
+-- The result is based on the current orientation of both the container and the objects.
 
 function TtsObjUtils.get_drop_pos(container, obj)
    local pos = TtsObjUtils.get_top_pos(container)
