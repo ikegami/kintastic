@@ -70,7 +70,7 @@ function TtsObjUtils.get_abs_depth(obj)  return obj.getBounds().size.z end
 function TtsObjUtils.get_top_pos(obj)
    local bounds = obj.getBounds()
 
-   if obj.tag == "Scripting" then
+   if obj.name == "ScriptingTrigger" then
       bounds.size = obj.getScale()
    end
 
