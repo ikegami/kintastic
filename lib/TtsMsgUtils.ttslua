@@ -96,6 +96,77 @@ function TtsMsgUtils.announce_player_turn(color_name)
 end
 
 
+-- ----------------------------------------
+-- Public function TtsMsgUtils.pulse_obj
+--
+-- The second argument is an Color object or a Color-like table.
+-- The third argument is optional.
+-- If the num_pulses option is set to -1,
+-- the pulsing will continue until canceled.
+--
+-- The function returns a function that can be called
+-- to cancel the pulsing (if still ongoing).
+
+function TtsMsgUtils.pulse_obj(obj, color, opts)
+   color = Color(color)
+
+   local pulse_dur          = opts and opts.pulse_dur          or 1.2
+   local num_steps_per_edge = opts and opts.num_steps_per_edge or 6
+   local num_pulses         = opts and opts.num_pulses         or 4
+
+   num_pulses = math.floor(num_pulses)
+   if num_pulses == 0 then
+      return
+   end
+
+   local num_steps_per_pulse = num_steps_per_edge * 2
+   local step_dur = pulse_dur / num_steps_per_pulse
+
+   local wait_id
+   local step_num = 0
+   local pulse_num = 1
+   local f = function()
+      step_num = step_num + 1
+      if step_num == num_steps_per_pulse then
+         step_num = 0
+         obj.highlightOff()
+
+         if num_pulses >= 0 then
+            pulse_num = pulse_num + 1
+            if pulse_num > num_pulses then
+               wait_id = nil
+            end
+         end
+      else
+         -- alpha = e^(-128 (x - 0.5) ^ 4)
+         -- A plot can found here:
+         -- https://www.wolframalpha.com/input/?i=alpha+%3D+e%5E%28-128+%28x+-+0.5%29+%5E+4%29+from+0+to+1
+         local alpha = step_num / num_steps_per_pulse - 0.5
+         alpha = alpha * alpha
+         alpha = alpha * alpha
+         alpha = math.exp(-128 * alpha)
+         color:setAt('a', alpha)
+         obj.highlightOn(color)
+      end
+   end
+
+   if num_pulses > 0 then
+      local num_steps = num_pulses * num_steps_per_pulse
+      wait_id = Wait.time(f, step_dur, num_steps)
+   else
+      wait_id = Wait.time(f, step_dur, -1)
+   end
+
+   return function()
+      if wait_id then
+         Wait.stop(wait_id)
+         obj.highlightOff()
+         wait_id = nil
+      end
+   end
+end
+
+
 -- ================================================================================
 
 return TtsMsgUtils
