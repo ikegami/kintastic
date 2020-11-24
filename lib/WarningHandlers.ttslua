@@ -1,0 +1,67 @@
+-- ================================================================================
+-- Warning Handlers
+--
+-- This module should be minimal, being loaded by TableLock and Const.
+-- ================================================================================
+
+-- The module.
+local WarningHandlers = { }
+
+
+-- ================================================================================
+-- Public functions.
+--
+-- These function can be used where:
+-- - The function may thrown an exception.
+-- - The function may return something false to abort the operation silently.
+-- - The function may return something true to proceed normally.
+
+-- ----------------------------------------
+-- Public function WarningHandlers.fatal_violation
+--
+-- Throw an exception.
+
+WarningHandlers.fatal_violation = error
+
+
+-- ----------------------------------------
+-- Public function WarningHandlers.announce_violation
+--
+-- Announce the violation to the host and proceed normally.
+
+function WarningHandlers.announce_violation(msg)
+   for i, player in ipairs(Player.getPlayers()) do
+      if player.host then
+         broadcastToColor(msg, player.color, Color.Red)
+         break
+      end
+   end
+
+   return true
+end
+
+
+-- ----------------------------------------
+-- Public function WarningHandlers.announce_violation_to_all
+--
+-- Announce the violation to all and proceed normally.
+
+function WarningHandlers.announce_violation(msg)
+   broadcastToAll(msg, player.color, Color.Red)
+   return true
+end
+
+
+-- ----------------------------------------
+-- Public function WarningHandlers.ignore_violation
+--
+-- Proceed normally.
+
+function WarningHandlers.ignore_violation(msg)
+   return true
+end
+
+
+-- ================================================================================
+
+return WarningHandlers

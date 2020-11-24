@@ -8,6 +8,9 @@
 -- can result in a mysterious "Unexpected LuaType Tuple" fatal error.
 -- ================================================================================
 
+-- Modules.
+local WarningHandlers = require("kintastic/lib/WarningHandlers")
+
 -- Forward declarations for privates found at the bottom.
 local attach_self
 
@@ -21,7 +24,15 @@ local TableLock = { }
 local buggy = _VERSION == "MoonSharp 1.5.0.0"
 
 
--- ----------------------------------------
+-- ================================================================================
+-- Public on_violation handlers.
+
+for k, v in pairs(WarningHandlers) do
+   TableLock[k] = v
+end
+
+
+-- ================================================================================
 -- Public attributes
 --
 -- TableLock.on_violation(msg) is called on a constraint violation.
@@ -29,17 +40,14 @@ local buggy = _VERSION == "MoonSharp 1.5.0.0"
 -- - If TableLock.on_violation(msg) returns something true, the operation will proceed.
 -- - If TableLock.on_violation(msg) returns something false, the operationg will fail silently.
 -- - Note that TableLock.on_violation(msg) is also called if declare, declare_and_set or merge is misused.
--- - Three ready-made handlers are provided for your convenience:
---   - TableLock.fatal_violation
---   - TableLock.announce_violation
---   - TableLock.ignore_violation
+-- - The functions provided by the WarningHandlers module may be used here. They are re-exported by this module.
 --
 -- TableLock.limited_functionality reports if functionality has been disabled to
 -- avoid running afoul of a bug in Moonsharp <1.6.0.0. See module header for details.
 
-TableLock.if_dev = nil                    -- OBSOLETE. Use a custom on_violation instead.
-TableLock.on_violation = error            -- Editable.
-TableLock.limited_functionality = buggy   -- Read-only.
+TableLock.if_dev = nil                               -- OBSOLETE. Use a custom on_violation instead.
+TableLock.on_violation = TableLock.fatal_violation   -- Editable.
+TableLock.limited_functionality = buggy              -- Read-only.
 
 
 -- ----------------------------------------
