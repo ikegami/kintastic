@@ -29,6 +29,10 @@ local buggy = _VERSION == "MoonSharp 1.5.0.0"
 -- - If TableLock.on_violation(msg) returns something true, the operation will proceed.
 -- - If TableLock.on_violation(msg) returns something false, the operationg will fail silently.
 -- - Note that TableLock.on_violation(msg) is also called if declare, declare_and_set or merge is misused.
+-- - Three ready-made handlers are provided for your convenience:
+--   - TableLock.fatal_violation
+--   - TableLock.announce_violation
+--   - TableLock.ignore_violation
 --
 -- TableLock.limited_functionality reports if functionality has been disabled to
 -- avoid running afoul of a bug in Moonsharp <1.6.0.0. See module header for details.
@@ -244,6 +248,44 @@ function TableLock.declare_atom_symbols()
       "__atom_highlight_guid",
       "__atom_highlight_guids"
    )
+end
+
+
+-- ================================================================================
+-- Public on_violation handlers.
+
+-- ----------------------------------------
+-- Public on_violation handler TableLock.fatal_violation
+--
+-- Announce the violation and proceed normally.
+
+TableLock.fatal_violation = error
+
+
+-- ----------------------------------------
+-- Public on_violation handler TableLock.announce_violation
+--
+-- Announce the violation to the host and proceed normally.
+
+function TableLock.announce_violation(msg)
+   for i, player in ipairs(Player.getPlayers()) do
+      if player.host then
+         broadcastToColor(msg, player.color, Color.Red)
+         break
+      end
+   end
+
+   return true
+end
+
+
+-- ----------------------------------------
+-- Public on_violation handler TableLock.ignore_violation
+--
+-- Proceed normally.
+
+function TableLock.ignore_violation(msg)
+   return true
 end
 
 
