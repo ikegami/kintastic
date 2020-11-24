@@ -207,7 +207,13 @@ function TableLock.unlock(tbl, cb)
    local success, rv = pcall(
       function()
          self.enabled = false
+
          cb()
+
+         local declared = self.declared
+         for k in pairs(tbl) do
+            declared[k] = true
+         end
       end
    )
 
