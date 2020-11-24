@@ -13,7 +13,7 @@ local TtsObjUtils = { }
 -- Public interface
 
 -- ----------------------------------------
--- Public function TtsObjUtils.get_host
+-- Public function TtsObjUtils.resolve_guids
 
 function TtsObjUtils.resolve_guids(tbl, not_required)
    not_required = not_required or { }
