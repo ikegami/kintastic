@@ -8,6 +8,9 @@
 -- can result in a mysterious "Unexpected LuaType Tuple" fatal error.
 -- ================================================================================
 
+-- Forward declarations for privates found at the bottom.
+local attach_self
+
 -- The module.
 local TableLock = { }
 
@@ -21,12 +24,18 @@ local buggy = _VERSION == "MoonSharp 1.5.0.0"
 -- ----------------------------------------
 -- Public attributes
 --
--- TableLock.is_dev is used to determine the code is in development or in production.
--- TableLock.on_violation controls what happens on a constraint violation.
+-- TableLock.on_violation(msg) is called on a constraint violation.
+-- - TableLock.on_violation(msg) may call error() to abort execution.
+-- - If TableLock.on_violation(msg) returns something true, the operation will proceed.
+-- - If TableLock.on_violation(msg) returns something false, the operationg will fail silently.
+-- - Note that TableLock.on_violation(msg) is also called if declare, declare_and_set or merge is misused.
+--
+-- TableLock.limited_functionality reports if functionality has been disabled to
+-- avoid running afoul of a bug in Moonsharp <1.6.0.0. See module header for details.
 
-TableLock.is_dev = false                   -- editable
-TableLock.on_violation = error             -- editable
-TableLock.limited_functionality = buggy    -- read-only
+TableLock.if_dev = nil                    -- OBSOLETE. Use a custom on_violation instead.
+TableLock.on_violation = error            -- Editable.
+TableLock.limited_functionality = buggy   -- Read-only.
 
 
 -- ----------------------------------------
@@ -36,18 +45,14 @@ TableLock.limited_functionality = buggy    -- read-only
 -- longer be forbidden for the provided table.
 
 function TableLock.declare(tbl, ...)
-   if not TableLock.is_dev then
-      return
-   end
-
    local mt = getmetatable(tbl)
-   if not mt then
-      error("Table needs to have been locked at some point.")
-   end
-
-   local self = mt.___TableLock
+   local self = mt and mt.___TableLock
    if not self then
-      error("Table needs to have been locked at some point.")
+      if TableLock.on_violation("Table needs to have been locked at some point.") then
+         add_state(tbl)
+      end
+
+      return
    end
 
    local c = select("#", ...)
@@ -71,18 +76,14 @@ end
 -- Public function TableLock.merge
 
 function TableLock.merge(dst, src)
-   if not TableLock.is_dev then
-      return
-   end
-
    local mt = getmetatable(dst)
-   if not mt then
-      error("Table needs to have been locked at some point.")
-   end
-
-   local self = mt.___TableLock
+   local self = mt and mt.___TableLock
    if not self then
-      error("Table needs to have been locked at some point.")
+      if TableLock.on_violation("Table needs to have been locked at some point.") then
+         add_state(tbl)
+      end
+
+      return
    end
 
    for k, v in pairs(src) do
@@ -102,54 +103,44 @@ end
 -- Locking a table that's already locked has no effect.
 
 function TableLock.lock(tbl)
-   local mt = getmetatable(tbl)
-   if not mt then
-      mt = {}
-      setmetatable(tbl, mt)
-   end
-
-   local self = mt.___TableLock
-   if self then
-      local declared = self.declared
-      for k in pairs(tbl) do
-         declared[k] = true
-      end
-
-      self.enabled = true
+   local mt, self = attach_self(tbl)
+   if self.enabled then
       return tbl
    end
 
-   local declared = {}
    for k in pairs(tbl) do
-      declared[k] = true
+      self.declared[k] = true
    end
 
-   self = {
-      enabled  = true,
-      declared = declared,
-   }
+   self.enabled = true
 
-   local old_index    = mt.__index    or rawget
-   local old_newindex = mt.__newindex or rawset
+   if not self.hooked then
+      local old_index    = mt.__index    or rawget
+      local old_newindex = mt.__newindex or rawset
 
-   mt.___TableLock = self
-
-   mt.__index = function(t, k)
-      if not self.declared[k] and self.enabled then
-         TableLock.on_violation("Undeclared access of " .. tostring(k))
-      end
-
-      return old_index(t, k)
-   end
-
-   if not buggy then
-      mt.__newindex = function(t, k, v)
+      mt.__index = function(t, k)
          if not self.declared[k] and self.enabled then
-            TableLock.on_violation("Undeclared write to " .. tostring(k))
+            if not TableLock.on_violation("Undeclared access of " .. tostring(k)) then
+               return
+            end
          end
 
-         return old_newindex(t, k, v)
+         return old_index(t, k)
       end
+
+      if not buggy then
+         mt.__newindex = function(t, k, v)
+            if not self.declared[k] and self.enabled then
+               if not TableLock.on_violation("Undeclared write to " .. tostring(k)) then
+                  return
+               end
+            end
+
+            return old_newindex(t, k, v)
+         end
+      end
+
+      self.hooked = true
    end
 
    return tbl
@@ -159,16 +150,10 @@ end
 -- ----------------------------------------
 -- Public function TableLock.lock_if_dev
 --
--- Prevents any accesses or changes to undeclared fields of a table
--- if TableLock.is_dev is false when this function is called.
--- If true, this function has no effect, and thus avoids the
--- performance penalty of meta-methods in production releases.
+-- OBSOLETE. For backwards compatibility only.
 
 function TableLock.lock_if_dev(tbl)
-   if TableLock.is_dev then
-      TableLock.lock(tbl)
-   end
-
+   add_state(tbl)
    return tbl
 end
 
@@ -194,11 +179,15 @@ end
 -- ----------------------------------------
 -- Public function TableLock.rlock_if_dev
 --
--- A recursive version of TableLock.lock_if_dev
+-- OBSOLETE. For backwards compatibility only.
 
 function TableLock.rlock_if_dev(tbl)
-   if TableLock.is_dev then
-      TableLock.rlock(tbl)
+   add_state(tbl)
+
+   for k, v in pairs(tbl) do
+      if type(v) == "table" then
+         TableLock.rlock_if_dev(v)
+      end
    end
 
    return tbl
@@ -216,24 +205,16 @@ end
 
 function TableLock.unlock(tbl, cb)
    local mt = getmetatable(tbl)
-   if not mt then
-      return cb()
-   end
-
-   local self = mt.___TableLock
-   if not self then
-      return cb()
-   end
-
-   if not self.enabled then
+   local self = mt and mt.___TableLock
+   if not self or not self.enabled then
       return cb()
    end
 
    local success, rv = pcall(
       function()
          self.enabled = false
-
          cb()
+         self.enabled = true
 
          local declared = self.declared
          for k in pairs(tbl) do
@@ -263,6 +244,34 @@ function TableLock.declare_atom_symbols()
       "__atom_highlight_guid",
       "__atom_highlight_guids"
    )
+end
+
+
+-- ================================================================================
+-- Privates
+
+-- ----------------------------------------
+-- Private function attach_self
+
+function attach_self(tbl)
+   local mt = getmetatable(tbl)
+   if not mt then
+      mt = { }
+      setmetatable(tbl, mt)
+   end
+
+   local self = mt.___TableLock
+   if not self then
+      self = {
+         hooked   = false,
+         enabled  = false,
+         declared = { },
+      }
+
+      mt.___TableLock = self
+   end
+
+   return mt, self
 end
 
 
