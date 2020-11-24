@@ -68,6 +68,31 @@ end
 
 
 -- ----------------------------------------
+-- Public function TableLock.merge
+
+function TableLock.merge(dst, src)
+   if not TableLock.is_dev then
+      return
+   end
+
+   local mt = getmetatable(dst)
+   if not mt then
+      error("Table needs to have been locked at some point.")
+   end
+
+   local self = mt.___TableLock
+   if not self then
+      error("Table needs to have been locked at some point.")
+   end
+
+   for k, v in pairs(src) do
+      self.declared[k] = true
+      dst[k] = v
+   end
+end
+
+
+-- ----------------------------------------
 -- Public function TableLock.lock
 --
 -- Prevents any accesses or changes to undeclared fields of a table.
