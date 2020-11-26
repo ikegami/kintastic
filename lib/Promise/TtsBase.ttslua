@@ -29,7 +29,7 @@ local native_spawn_object_json = spawnObjectJSON
 function TtsBase.spawnObjectJSON(args)
    return Promise:new(
       function(resolve, reject)
-         args = TableUtils.copy(args)
+         args = args and TableUtils.copy(args) or { }
 
          if args.callback_function then
             local orig_cb = args.callback_function
@@ -62,7 +62,7 @@ local native_spawn_object_data = spawnObjectData
 function TtsBase.spawnObjectData(args)
    return Promise:new(
       function(resolve, reject)
-         args = TableUtils.copy(args)
+         args = args and TableUtils.copy(args) or { }
 
          if args.callback_function then
             local orig_cb = args.callback_function
