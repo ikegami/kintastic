@@ -34,7 +34,7 @@ function TtsBase.spawnObjectJSON(args)
          if args.callback_function then
             local orig_cb = args.callback_function
             args.callback_function = function(obj)
-               resolve(orib_cb())
+               resolve(orib_cb(obj))
             end
          else
             args.callback_function = resolve
@@ -67,7 +67,7 @@ function TtsBase.spawnObjectData(args)
          if args.callback_function then
             local orig_cb = args.callback_function
             args.callback_function = function(obj)
-               resolve(orib_cb())
+               resolve(orib_cb(obj))
             end
          else
             args.callback_function = resolve
