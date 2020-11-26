@@ -841,7 +841,7 @@ end
 -- Called to mark a Promise as fulfilled or rejected.
 -- It causes `.next()` callbacks to be scheduled.
 --
--- If `self``has already become fulfilled or rejected
+-- If `self` has already become fulfilled or rejected
 -- calling this method has no effect.
 --
 -- If `self` is mirroring another Promise or promise-like object,
