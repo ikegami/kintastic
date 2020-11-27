@@ -3,19 +3,15 @@
 -- ================================================================================
 
 -- Modules.
-local Promise          = require("kintastic/lib/Promise")
-local BaseTtzZoneUtils = require("kintastic/lib/TtsZoneUtils")
-
--- Forward declarations for privates found at the bottom.
-local wait_for_instant_transform
-local wait_for_smooth_transform
+local TtsObject        = require("kintastic/lib/Promise/TtsObject")
+local BaseTtsZoneUtils = require("kintastic/lib/TtsZoneUtils")
 
 -- The module.
 local TtsZoneUtils = { }
 
 -- Inherit functions from base TtsZoneUtils.
 setmetatable(TtsZoneUtils, {
-   __index = BaseTtzZoneUtils,
+   __index = BaseTtsZoneUtils,
 })
 
 
@@ -25,74 +21,11 @@ setmetatable(TtsZoneUtils, {
 -- ----------------------------------------
 -- Public function TtsZoneUtils.move_obj
 --
--- Moves an object to the top of the specified zone.
--- Specifically, the object will be positions such that its
--- origin is centered on the center of the top of the zone.
--- The object will be rotated according to the zone's rotation.
--- Use smooth movememnt.
---
--- Returns a promise which will be fulfilled with `obj`
--- or rejected with an error message.
+-- WARNING: DEPRECATED/OBSLETE.
+-- Use TtsObject.moveToZoneTopSmooth(obj, zone) instead.
+-- TtsObject refers to the kintastic/Promise/TtsObject module.
 
-function TtsZoneUtils.move_obj(obj, zone)
-   return Promise:new(
-      function(resolve, reject)
-         local pos = zone.getPosition();
-         pos.y = pos.y + math.abs(zone.getScale().y) / 2;
-         local rot = zone.getRotation();
-
-         obj.setPositionSmooth(pos)
-         obj.setRotationSmooth(rot)
-
-         wait_for_smooth_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ================================================================================
--- Private helpers
-
--- ----------------------------------------
--- Private function wait_for_instant_transform
---
--- They're not quite instantaneous.
-
-function wait_for_instant_transform(obj, resolve, reject)
-   Wait.frames(
-      function()
-         if obj == nil then
-            reject("Destroyed")
-         else
-            resolve(obj)
-         end
-      end,
-      1
-   )
-end
-
-
--- ----------------------------------------
--- Private function wait_for_smooth_transform
-
-function wait_for_smooth_transform(obj, resolve, reject)
-   Wait.condition(
-      function()
-         if obj == nil then
-            reject("Destroyed")
-         else
-            resolve(obj)
-         end
-      end,
-      function()
-         return obj == nil or not obj.isSmoothMoving()
-      end,
-      3,
-      function()
-         reject("Timeout")
-      end
-   )
-end
+TtsZoneUtils.move_obj = TtsObject.moveToZoneTopSmooth
 
 
 -- ================================================================================

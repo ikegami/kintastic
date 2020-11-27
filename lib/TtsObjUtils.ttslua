@@ -4,6 +4,7 @@
 
 -- Modules.
 local TtsMsgUtils = require("kintastic/lib/TtsMsgUtils")
+local TtsObject   = require("kintastic/lib/TtsObject")
 
 -- The module.
 local TtsObjUtils = { }
@@ -49,83 +50,22 @@ end
 -- Public function TtsObjUtils.get_abs_width()
 -- Public function TtsObjUtils.get_abs_height()
 -- Public function TtsObjUtils.get_abs_depth()
---
--- The results are based on the object's current orientation.
-
-function TtsObjUtils.get_abs_width(obj)  return obj.getBounds().size.x end
-function TtsObjUtils.get_abs_height(obj) return obj.getBounds().size.y end
-function TtsObjUtils.get_abs_depth(obj)  return obj.getBounds().size.z end
-
-
--- ----------------------------------------
 -- Public function TtsObjUtils.get_top_pos
---
--- Returns the position which consists
--- - the center x of the object's bounding box,
--- - the center z of the object's bounding box, and
--- - the highest y of the object's bounding box.
---
--- The result is based on the object's current orientation.
-
-function TtsObjUtils.get_top_pos(obj)
-   local bounds = obj.getBounds()
-
-   if obj.name == "ScriptingTrigger" then
-      bounds.size = obj.getScale()
-   end
-
-   local x = bounds.center.x
-   local z = bounds.center.z
-   local y = bounds.center.y + bounds.size.y / 2
-   return Vector(x, y, z)
-end
-
-
--- ----------------------------------------
 -- Public function TtsObjUtils.get_height_to_origin
---
--- Returns the difference between the object's origin and the lowest y of the object's box.
---
--- The result is based on the object's current orientation.
-
-function TtsObjUtils.get_height_to_origin(obj)
-   local bounds = obj.getBounds()
-   return bounds.size.y / 2 + bounds.offset.y
-end
-
-
--- ----------------------------------------
 -- Public function TtsObjUtils.get_drop_pos
---
--- Returns the difference between the object's origin and the lowest y of the object's box.
---
--- The result is based on the current orientation of both the container and the objects.
-
-function TtsObjUtils.get_drop_pos(container, obj)
-   local pos = TtsObjUtils.get_top_pos(container)
-   pos.y = pos.y + TtsObjUtils.get_height_to_origin(obj)
-   return pos
-end
-
-
--- ----------------------------------------
 -- Public function TtsObjUtils.is_stackable
-
-function TtsObjUtils.is_stackable(obj)
-   local custom_obj = obj.getCustomObject()
-   return custom_obj and custom_obj.stackable
-end
-
-
--- ----------------------------------------
 -- Public function TtsObjUtils.is_stack
 --
--- We can't just use getQuantity() because it
--- can return a positive value for bags.
+-- WARNING: DEPRECATED/OBSLETE. Use TtsObject instead.
 
-function TtsObjUtils.is_stack(obj)
-   return TtsObjUtils.is_stackable(obj) and obj.getQuantity() > 1
-end
+TtsObjUtils.get_abs_width        = TtsObject.get_abs_width
+TtsObjUtils.get_abs_height       = TtsObject.get_abs_height
+TtsObjUtils.get_abs_depth        = TtsObject.get_abs_depth
+TtsObjUtils.get_top_pos          = TtsObject.get_top_pos
+TtsObjUtils.get_height_to_origin = TtsObject.get_height_to_origin
+TtsObjUtils.get_drop_pos         = |container, obj|TtsObject.get_drop_pos(obj, container)
+TtsObjUtils.is_stackable         = TtsObject.is_stackable
+TtsObjUtils.is_stack             = TtsObject.is_stack
 
 
 -- ================================================================================

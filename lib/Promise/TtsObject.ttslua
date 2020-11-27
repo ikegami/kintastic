@@ -3,15 +3,23 @@
 -- ================================================================================
 
 -- Modules.
-local Promise    = require("kintastic/lib/Promise")
-local TableUtils = require("kintastic/lib/TableUtils")
+local Promise       = require("kintastic/lib/Promise")
+local TableUtils    = require("kintastic/lib/TableUtils")
+local BaseTtsObject = require("kintastic/lib/TtsObject")
 
 -- Forward declarations for privates found at the bottom.
+local wrap_instant_transform
+local wrap_smooth_transform
 local wait_for_instant_transform
 local wait_for_smooth_transform
 
 -- The module.
 local TtsObject = { }
+
+-- Inherit functions from base TtsZoneUtils.
+setmetatable(TtsObject, {
+   __index = BaseTtsObject,
+})
 
 
 -- ================================================================================
@@ -21,6 +29,32 @@ local TtsObject = { }
 -- Unless otherwise stated, each function returns
 -- a promise which will be fulfilled with `obj`
 -- or rejected with an error message.
+
+-- ----------------------------------------
+-- Public function TtsObject.setTransform
+
+function TtsObject.setTransform(obj, args)
+   return Promise:new(
+      function(resolve, reject)
+         BaseTtsObject.setTransform(args)
+         wait_for_instant_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.setTransformSmooth
+
+function TtsObject.setTransformSmooth(obj, args)
+   return Promise:new(
+      function(resolve, reject)
+         BaseTtsObject.setTransformSmooth(args)
+         wait_for_smooth_transform(obj, resolve, reject)
+      end
+   )
+end
+
 
 -- ----------------------------------------
 -- Public function TtsObject.setPosition
@@ -156,35 +190,12 @@ end
 
 
 -- ----------------------------------------
+-- Public function TtsObject.moveToZoneTop
 
-function TtsObject.addForce()           error("addForce isn't currently supported")           end
-function TtsObject.addTorque()          error("addTorque isn't currently supported")          end
-function TtsObject.setVelocity()        error("setVelocity isn't currently supported")        end
-function TtsObject.setAngularVelocity() error("setAngularVelocity isn't currently supported") end
-
-
--- ================================================================================
--- Public interface
---
--- Unless otherwise stated, each function returns
--- a promise which will be fulfilled with `obj`
--- or rejected with an error message.
-
--- ----------------------------------------
--- Public function TtsObject.setTransform
---
--- Wraps setPosition, setRotation and setScale,
--- allowing any combination to be performed at once.
-
-function TtsObject.setTransform(obj, args)
+function TtsObject.moveToZoneTop(obj, zone)
    return Promise:new(
       function(resolve, reject)
-         args = args or { }
-
-         if args.position then obj.setPosition( args.position ) end
-         if args.rotation then obj.setRotation( args.rotation ) end
-         if args.scale    then obj.setScale(    args.scale    ) end
-
+         BaseTtsObject.moveToZoneTop(obj, zone)
          wait_for_instant_transform(obj, resolve, reject)
       end
    )
@@ -192,23 +203,24 @@ end
 
 
 -- ----------------------------------------
--- Public function TtsObject.setTransformSmooth
---
--- Wraps setPositionSmooth and setRotationSmooth,
--- allowing any combination to be performed at once.
+-- Public function TtsObject.moveToZoneTopSmooth
 
-function TtsObject.setTransformSmooth(obj, args)
+function TtsObject.moveToZoneTopSmooth(obj, zone)
    return Promise:new(
       function(resolve, reject)
-         args = args or { }
-
-         if args.position then obj.setPositionSmooth( args.position, args.collide, args.fast ) end
-         if args.rotation then obj.setRotationSmooth( args.rotation, args.collide, args.fast ) end
-
+         BaseTtsObject.moveToZoneTopSmooth(obj, zone)
          wait_for_smooth_transform(obj, resolve, reject)
       end
    )
 end
+
+
+-- ----------------------------------------
+
+function TtsObject.addForce()           error("addForce isn't currently supported")           end
+function TtsObject.addTorque()          error("addTorque isn't currently supported")          end
+function TtsObject.setVelocity()        error("setVelocity isn't currently supported")        end
+function TtsObject.setAngularVelocity() error("setAngularVelocity isn't currently supported") end
 
 
 -- ================================================================================

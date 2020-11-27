@@ -5,6 +5,7 @@
 -- Modules.
 local Introspection = require("kintastic/lib/Introspection")
 local Iters         = require("kintastic/lib/Iters")
+local TtsObject     = require("kintastic/lib/Promise/TtsObject")
 
 -- Imports.
 local is_callable = Introspection.is_callable

@@ -1,0 +1,172 @@
+-- ================================================================================
+-- Extensions for TTS's Objects.
+-- ================================================================================
+
+-- The module.
+local TtsObject = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function TtsObject.setTransform
+--
+-- Wraps setPosition, setRotation and setScale,
+-- allowing any combination to be performed at once.
+
+function TtsObject.setTransform(obj, args)
+   return Promise:new(
+      function(resolve, reject)
+         args = args or { }
+
+         if args.position then obj.setPosition( args.position ) end
+         if args.rotation then obj.setRotation( args.rotation ) end
+         if args.scale    then obj.setScale(    args.scale    ) end
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.setTransformSmooth
+--
+-- Wraps setPositionSmooth and setRotationSmooth,
+-- allowing any combination to be performed at once.
+
+function TtsObject.setTransformSmooth(obj, args)
+   return Promise:new(
+      function(resolve, reject)
+         args = args or { }
+
+         if args.position then obj.setPositionSmooth( args.position, args.collide, args.fast ) end
+         if args.rotation then obj.setRotationSmooth( args.rotation, args.collide, args.fast ) end
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.moveToZoneTop
+--
+-- Moves an object to the top of the specified zone.
+-- Specifically, the object will be positions such that its
+-- origin is centered on the center of the top of the zone.
+-- The object will be rotated according to the zone's rotation.
+-- Uses instant movement.
+
+function TtsObject.moveToZoneTop(obj, zone)
+   local pos = zone.getPosition()
+   pos.y = pos.y + math.abs(zone.getScale().y) / 2
+   local rot = zone.getRotation()
+
+   obj.setPosition(pos)
+   obj.setRotation(rot)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.moveToZoneTopSmooth
+--
+-- Moves an object to the top of the specified zone.
+-- Specifically, the object will be positions such that its
+-- origin is centered on the center of the top of the zone.
+-- The object will be rotated according to the zone's rotation.
+-- Uses smooth movement.
+
+function TtsObject.moveToZoneTopSmooth(obj, zone)
+   local pos = zone.getPosition()
+   pos.y = pos.y + math.abs(zone.getScale().y) / 2
+   local rot = zone.getRotation()
+
+   obj.setPositionSmooth(pos)
+   obj.setRotationSmooth(rot)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.get_abs_width()
+-- Public function TtsObject.get_abs_height()
+-- Public function TtsObject.get_abs_depth()
+--
+-- The results are based on the object's current orientation.
+
+function TtsObject.get_abs_width(obj)  return obj.getBounds().size.x end
+function TtsObject.get_abs_height(obj) return obj.getBounds().size.y end
+function TtsObject.get_abs_depth(obj)  return obj.getBounds().size.z end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.get_top_pos
+--
+-- Returns the position which consists
+-- - the center x of the object's bounding box,
+-- - the center z of the object's bounding box, and
+-- - the highest y of the object's bounding box.
+--
+-- The result is based on the object's current orientation.
+
+function TtsObject.get_top_pos(obj)
+   local bounds = obj.getBounds()
+
+   if obj.name == "ScriptingTrigger" then
+      bounds.size = obj.getScale()
+   end
+
+   local x = bounds.center.x
+   local z = bounds.center.z
+   local y = bounds.center.y + bounds.size.y / 2
+   return Vector(x, y, z)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.get_height_to_origin
+--
+-- Returns the difference between the object's origin and the lowest y of the object's box.
+--
+-- The result is based on the object's current orientation.
+
+function TtsObject.get_height_to_origin(obj)
+   local bounds = obj.getBounds()
+   return bounds.size.y / 2 + bounds.offset.y
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.get_drop_pos
+--
+-- Returns the position to which to move the object so it sits just above the container.
+--
+-- The result is based on the current orientation of both the object and the container.
+
+function TtsObject.get_drop_pos(obj, container)
+   local pos = TtsObject.get_top_pos(container)
+   pos.y = pos.y + TtsObject.get_height_to_origin(obj)
+   return pos
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.is_stackable
+
+function TtsObject.is_stackable(obj)
+   local custom_obj = obj.getCustomObject()
+   return custom_obj and custom_obj.stackable
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.is_stack
+--
+-- We can't just use getQuantity() because it
+-- can return a positive value for bags.
+
+function TtsObject.is_stack(obj)
+   return TtsObject.is_stackable(obj) and obj.getQuantity() > 1
+end
+
+
+-- ================================================================================
+
+return TtsObject
