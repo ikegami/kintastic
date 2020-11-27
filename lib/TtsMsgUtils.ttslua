@@ -107,12 +107,15 @@ end
 -- The function returns a function that can be called
 -- to cancel the pulsing (if still ongoing).
 
+-- /execute require("kintastic/lib/TtsMsgUtils").pulse_obj(getObjectFromGUID("b1585e"), Color.Red, { init_color = Color.Blue })
 function TtsMsgUtils.pulse_obj(obj, color, opts)
-   color = Color(color)
+   opts = opts or { }
+   local pulse_dur          = opts.pulse_dur          or 1.2
+   local num_steps_per_edge = opts.num_steps_per_edge or 6
+   local num_pulses         = opts.num_pulses         or 4
 
-   local pulse_dur          = opts and opts.pulse_dur          or 1.2
-   local num_steps_per_edge = opts and opts.num_steps_per_edge or 6
-   local num_pulses         = opts and opts.num_pulses         or 4
+   color = Color(color)
+   local initial_alpha = color.a
 
    num_pulses = math.floor(num_pulses)
    if num_pulses == 0 then
@@ -134,18 +137,21 @@ function TtsMsgUtils.pulse_obj(obj, color, opts)
          if num_pulses >= 0 then
             pulse_num = pulse_num + 1
             if pulse_num > num_pulses then
+               obj.highlightOff()
                wait_id = nil
             end
          end
       else
-         -- alpha = e^(-128 (x - 0.5) ^ 4)
+         -- progress = e^(-128 (x - 0.5) ^ 4)
          -- A plot can found here:
          -- https://www.wolframalpha.com/input/?i=alpha+%3D+e%5E%28-128+%28x+-+0.5%29+%5E+4%29+from+0+to+1
-         local alpha = step_num / num_steps_per_pulse - 0.5
-         alpha = alpha * alpha
-         alpha = alpha * alpha
-         alpha = math.exp(-128 * alpha)
-         color:setAt('a', alpha)
+         -- In short, it favours the on state of the off state, and provides a smmoth transition between the two.
+         local progress = step_num / num_steps_per_pulse - 0.5
+         progress = progress * progress
+         progress = progress * progress
+         progress = math.exp(-128 * progress)
+
+         color.a = initial_alpha * progress
          obj.highlightOn(color)
       end
    end
