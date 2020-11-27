@@ -8,10 +8,10 @@ local TableUtils    = require("kintastic/lib/TableUtils")
 local BaseTtsObject = require("kintastic/lib/TtsObject")
 
 -- Forward declarations for privates found at the bottom.
-local wrap_instant_transform
-local wrap_smooth_transform
 local wait_for_instant_transform
 local wait_for_smooth_transform
+local wrap_instant_transform
+local wrap_smooth_transform
 
 -- The module.
 local TtsObject = { }
@@ -32,132 +32,30 @@ setmetatable(TtsObject, {
 
 -- ----------------------------------------
 -- Public function TtsObject.setTransform
-
-function TtsObject.setTransform(obj, args)
-   return Promise:new(
-      function(resolve, reject)
-         BaseTtsObject.setTransform(args)
-         wait_for_instant_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ----------------------------------------
 -- Public function TtsObject.setTransformSmooth
-
-function TtsObject.setTransformSmooth(obj, args)
-   return Promise:new(
-      function(resolve, reject)
-         BaseTtsObject.setTransformSmooth(args)
-         wait_for_smooth_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ----------------------------------------
 -- Public function TtsObject.setPosition
-
-function TtsObject.setPosition(obj, vec)
-   return Promise:new(
-      function(resolve, reject)
-         obj.setPosition(vec)
-         wait_for_instant_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ----------------------------------------
 -- Public function TtsObject.setPositionSmooth
-
-function TtsObject.setPositionSmooth(obj, vec, collide, fast)
-   return Promise:new(
-      function(resolve, reject)
-         obj.setPositionSmooth(vec, collide, fast)
-         wait_for_smooth_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ----------------------------------------
 -- Public function TtsObject.translate
-
-function TtsObject.translate(obj, vec)
-   return Promise:new(
-      function(resolve, reject)
-         obj.translate(vec)
-         wait_for_smooth_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ----------------------------------------
 -- Public function TtsObject.setRotation
-
-function TtsObject.setRotation(obj, vec)
-   return Promise:new(
-      function(resolve, reject)
-         obj.setRotation(vec)
-         wait_for_instant_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ----------------------------------------
 -- Public function TtsObject.setRotationSmooth
-
-function TtsObject.setRotationSmooth(obj, vec, collide, fast)
-   return Promise:new(
-      function(resolve, reject)
-         obj.setRotationSmooth(vec, collide, fast)
-         wait_for_smooth_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ----------------------------------------
 -- Public function TtsObject.rotate
-
-function TtsObject.rotate(obj, vec)
-   return Promise:new(
-      function(resolve, reject)
-         obj.rotate(vec)
-         wait_for_smooth_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ----------------------------------------
 -- Public function TtsObject.setScale
-
-function TtsObject.setScale(obj, vec)
-   return Promise:new(
-      function(resolve, reject)
-         obj.setScale(vec)
-         wait_for_instant_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ----------------------------------------
 -- Public function TtsObject.scale
+-- Public function TtsObject.moveToZoneTop
+-- Public function TtsObject.moveToZoneTopSmooth
 
-function TtsObject.scale(obj, vec)
-   return Promise:new(
-      function(resolve, reject)
-         obj.scale(vec)
-         wait_for_smooth_transform(obj, resolve, reject)
-      end
-   )
-end
+TtsObject.setTransform                   = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.setTransform,        obj, ... )
+TtsObject.setTransformSmooth             = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.setTransformSmooth,  obj, ... )
+TtsObject.setPosition                    = |obj, ...|wrap_instant_transform( obj, obj.setPosition,                        ... )
+TtsObject.setPositionSmooth              = |obj, ...|wrap_smooth_transform(  obj, obj.setPositionSmooth,                  ... )
+TtsObject.translate                      = |obj, ...|wrap_smooth_transform(  obj, obj.translate,                          ... )
+TtsObject.setRotation                    = |obj, ...|wrap_instant_transform( obj, obj.setRotation,                        ... )
+TtsObject.setRotationSmooth              = |obj, ...|wrap_smooth_transform(  obj, obj.setRotationSmooth,                  ... )
+TtsObject.rotate                         = |obj, ...|wrap_smooth_transform(  obj, obj.rotate,                             ... )
+TtsObject.setScale                       = |obj, ...|wrap_instant_transform( obj, obj.setScale,                           ... )
+TtsObject.scale                          = |obj, ...|wrap_instant_transform( obj, obj.scale,                              ... )
+TtsObject.moveToZoneTop                  = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.moveToZoneTop,       obj, ... )
+TtsObject.moveToZoneTopSmooth            = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.moveToZoneTopSmooth, obj, ... )
 
 
 -- ----------------------------------------
@@ -184,32 +82,6 @@ function TtsObject.takeObject(obj, args)
          end
 
          obj.takeObject(args)
-      end
-   )
-end
-
-
--- ----------------------------------------
--- Public function TtsObject.moveToZoneTop
-
-function TtsObject.moveToZoneTop(obj, zone)
-   return Promise:new(
-      function(resolve, reject)
-         BaseTtsObject.moveToZoneTop(obj, zone)
-         wait_for_instant_transform(obj, resolve, reject)
-      end
-   )
-end
-
-
--- ----------------------------------------
--- Public function TtsObject.moveToZoneTopSmooth
-
-function TtsObject.moveToZoneTopSmooth(obj, zone)
-   return Promise:new(
-      function(resolve, reject)
-         BaseTtsObject.moveToZoneTopSmooth(obj, zone)
-         wait_for_smooth_transform(obj, resolve, reject)
       end
    )
 end
@@ -263,6 +135,34 @@ function wait_for_smooth_transform(obj, resolve, reject)
       3,
       function()
          reject("Timeout")
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Private function wrap_instant_transform
+
+function wrap_instant_transform(obj, f, ...)
+   local args = { ... }
+   return Promise:new(
+      function(resolve, reject)
+         f(unpack(args))
+         wait_for_instant_transform(obj, resolve, reject)
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Private function wrap_smooth_transform
+
+function wrap_smooth_transform(obj, f, ...)
+   local args = { ... }
+   return Promise:new(
+      function(resolve, reject)
+         f(unpack(args))
+         wait_for_smooth_transform(obj, resolve, reject)
       end
    )
 end
