@@ -1,0 +1,59 @@
+-- ================================================================================
+-- Utils to aid debugging.
+-- ================================================================================
+
+-- The module.
+local Debug = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function Debug.require
+--
+-- Gives access to bundled modules.
+
+Debug.require = require
+
+
+-- ----------------------------------------
+-- Public function Debug.O
+--
+-- An alias for getObjectFromGUID.
+
+Debug.O = getObjectFromGUID
+
+
+-- ----------------------------------------
+-- Public constant Debug.host
+
+for i, player in ipairs(Player.getPlayers()) do
+   if player.host then
+      Debug.host = player
+      break
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function Debug.dd
+--
+-- usage:
+--    Debug.dd(x)
+--    Debug.dd(label, x)
+--
+-- WARNING: This uses a poor dumper which will be replaced with a better one in the future.
+
+function Debug.dd(a, b)
+   if b then
+      print(a .. " " .. logString(b))
+   else
+      print(            logString(b))
+   end
+end
+
+
+-- ================================================================================
+
+return Debug
