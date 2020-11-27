@@ -546,12 +546,11 @@ end
 -- ----------------------------------------
 -- Public instance method PromiseClass:sleep
 --
--- Returns a promise.
--- It becomes fulfilled after the specified amount of time has elapsed after this Promise became fulfilled.
--- It becomes rejected after the specified amount of time has elapsed after this Promise becomes rejected.
--- In both cases, it's resolved with the same value as this promise.
---
--- Duration is in (possibly-fractional) seconds.
+-- WARNING: DEPRECATED/OBSOLETE.
+-- Instead of promise:sleep(secs),        use promise:finally(TtsWait.time(secs))
+-- Instead of promise:sleep(secs, false), use promise:finally(TtsWait.time(secs))
+-- Instead of promise:sleep(secs, true),  use promise:next(TtsWait.time(secs))
+-- TtsWait refers to the kintastic/Promise/TtsWait module.
 
 function PromiseClass:sleep(secs, only_sleep_on_resolve)
    return self:next(
@@ -580,10 +579,9 @@ end
 -- ----------------------------------------
 -- Public instance method PromiseClass:frame_skip
 --
--- Returns a promise.
--- It becomes fulfilled one frame after this Promise becomes fulfilled.
--- It becomes rejected one frame after this Promise becomes rejected.
--- In both cases, it's resolved with the same value as this promise.
+-- WARNING: DEPRECATED/OBSOLETE.
+-- Instead of promise:frame_skip(), use promise:finally(TtsWait.frames(1))
+-- TtsWait refers to the kintastic/Promise/TtsWait module.
 
 function PromiseClass:frame_skip()
    return self:next(
