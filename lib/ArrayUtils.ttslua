@@ -74,6 +74,19 @@ end
 
 
 -- ----------------------------------------
+-- Public function ArrayUtils.sum
+
+function ArrayUtils.sum(array)
+   local sum = 0
+   for i, val in ipairs(array) do
+      sum = sum + 1
+   end
+
+   return sum
+end
+
+
+-- ----------------------------------------
 -- Public function ArrayUtils.make_set
 
 function ArrayUtils.make_set(array, key_gen, val_gen)
