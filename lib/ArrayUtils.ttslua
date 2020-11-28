@@ -20,11 +20,16 @@ setmetatable(ArrayUtils, {
 -- ----------------------------------------
 -- Public function ArrayUtils.push
 --
--- Returns the value added.
+-- Returns the added value(s).
 
-function ArrayUtils.push(array, val)
-   table.insert(array, val)
-   return val
+function ArrayUtils.push(array, ...)
+   local n = select("#", ...)
+   for i = 1, n do
+      local val = select(i, ...)
+      table.insert(array, val)
+   end
+
+   return ...
 end
 
 
