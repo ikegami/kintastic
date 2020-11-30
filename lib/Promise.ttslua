@@ -449,7 +449,7 @@ end
 -- Public instance methods
 
 -- ----------------------------------------
--- Public instance method PromiseClass:next
+-- Public instance method promise:next
 --
 -- Usage:
 --    local promise2 = promise:next(
@@ -504,7 +504,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method PromiseClass:done
+-- Public instance method promise:done
 --
 -- A sink used to ensure errors are reported.
 -- The arguments are optional.
@@ -525,7 +525,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method PromiseClass:catch
+-- Public instance method promise:catch
 
 function PromiseClass:catch(on_rejected)
    return self:next(nil, on_rejected)
@@ -533,7 +533,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method PromiseClass:finally
+-- Public instance method promise:finally
 
 function PromiseClass:finally(on_finally)
    return self:next(
@@ -544,7 +544,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method PromiseClass:sleep
+-- Public instance method promise:sleep
 --
 -- WARNING: DEPRECATED/OBSOLETE.
 -- Instead of promise:sleep(secs),        use promise:finally(TtsWait.time(secs))
@@ -577,7 +577,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method PromiseClass:frame_skip
+-- Public instance method promise:frame_skip
 --
 -- WARNING: DEPRECATED/OBSOLETE.
 -- Instead of promise:frame_skip(), use promise:finally(TtsWait.frames(1))
@@ -618,7 +618,7 @@ Promise.States = {
 
 
 -- ----------------------------------------
--- Semi-public instance methods PromiseClass:resolver and PromiseClass:rejecter
+-- Semi-public instance methods promise:resolver and promise:rejecter
 --
 -- These return functions that call resolve and reject repectively.
 -- Useful where a callback is expected.
@@ -629,7 +629,7 @@ function PromiseClass:rejecter(reason) return function() self:reject(reason) end
 
 
 -- ----------------------------------------
--- Semi-public instance methods PromiseClass:fulfill and PromiseClass:reject
+-- Semi-public instance methods promise:fulfill and promise:reject
 --
 -- Marks the Promise as fulfilled or rejected if it's pending and if it isn't mirroring.
 
@@ -638,7 +638,7 @@ function PromiseClass:reject(reason) transition(self, false, Promise.States.REJE
 
 
 -- ----------------------------------------
--- Semi-Public instance method PromiseClass:resolve
+-- Semi-Public instance method promise:resolve
 -- ** This is a different method than class method Promise:resolve **
 --
 -- If `Promise:resolve` is called with a Promise or something Promise-like, `promise` becomes a mirror for the
@@ -695,7 +695,7 @@ end
 
 
 -- ----------------------------------------
--- Private instance method PromiseClass:adopt_promise
+-- Private instance method promise:adopt_promise
 --
 -- Causes the promise (`self`) to mirror the state of another Promise (`promise_to_mirror`).
 --
@@ -739,7 +739,7 @@ end
 
 
 -- ----------------------------------------
--- Private instance method PromiseClass:adopt_promiselike
+-- Private instance method promise:adopt_promiselike
 --
 -- Causes the promise (`self`) to mirror the state of a Promise-like object (`promiselike_to_mirror`).
 --
@@ -785,7 +785,7 @@ end
 
 
 -- ----------------------------------------
--- Private instance method PromiseClass:on_state_change
+-- Private instance method promise:on_state_change
 --
 -- This method represents the core functionality of promises.
 --
@@ -818,7 +818,7 @@ end
 
 
 -- ----------------------------------------
--- Private instance method PromiseClass:schedule
+-- Private instance method promise:schedule
 --
 -- Schedule the Promise's `.next()` callbacks for asynchronous execution.
 -- Called when a Promise becomes fulfilled or rejected, and when `.next()`
@@ -834,7 +834,7 @@ end
 
 
 -- ----------------------------------------
--- Private instance method PromiseClass:transition
+-- Private instance method promise:transition
 --
 -- Called to mark a Promise as fulfilled or rejected.
 -- It causes `.next()` callbacks to be scheduled.

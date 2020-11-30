@@ -93,7 +93,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method Semaphore:up
+-- Public instance method semaphore:up
 --
 -- Usage:
 --    sem:up()
@@ -115,7 +115,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method Semaphore:down
+-- Public instance method semaphore:down
 --
 -- Usage:
 --    local cb = function() ... end
@@ -154,7 +154,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method Semaphore:adjust
+-- Public instance method semaphore:adjust
 --
 -- Immediately adjusts the value of the semaphore by `amount`.
 -- `amount` can be any positive or negative integer (or zero).

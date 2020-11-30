@@ -30,7 +30,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method Queue:enqueue
+-- Public instance method queue:enqueue
 
 function Queue:enqueue(value)
    local node = {
@@ -49,7 +49,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method Queue:is_empty
+-- Public instance method queue:is_empty
 
 function Queue:is_empty()
    return self.head == nil
@@ -57,7 +57,7 @@ end
 
 
 -- ----------------------------------------
--- Public instance method Queue:dequeue
+-- Public instance method queue:dequeue
 
 function Queue:dequeue()
    if self.head == nil then
