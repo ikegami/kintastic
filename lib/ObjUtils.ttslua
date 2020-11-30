@@ -28,8 +28,9 @@ ObjUtils.get_class = Introspection.get_class
 -- Public function ObjUtils.make_delegate
 
 function ObjUtils.make_delegate(o, method_name, ...)
+   local args = { ... }
    return function()
-      o[method_name](o, ...)
+      return o[method_name](o, unpack(args))
    end
 end
 
