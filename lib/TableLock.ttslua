@@ -17,6 +17,9 @@ local attach_self
 -- The module.
 local TableLock = { }
 
+-- Constant.
+local hook = "__kintastic_TableLock"
+
 
 -- ----------------------------------------
 -- Disable functionality that runs afoul of a bug in Moonsharp <1.6.0.0. See module header for details.
@@ -58,7 +61,7 @@ TableLock.limited_functionality = buggy              -- Read-only.
 
 function TableLock.declare(tbl, ...)
    local mt = getmetatable(tbl)
-   local self = mt and mt.___TableLock
+   local self = mt and mt[hook]
    if not self then
       if TableLock.on_violation("Table needs to have been locked at some point.") then
          add_state(tbl)
@@ -89,7 +92,7 @@ end
 
 function TableLock.merge(dst, src)
    local mt = getmetatable(dst)
-   local self = mt and mt.___TableLock
+   local self = mt and mt[hook]
    if not self then
       if TableLock.on_violation("Table needs to have been locked at some point.") then
          add_state(tbl)
@@ -217,7 +220,7 @@ end
 
 function TableLock.unlock(tbl, cb)
    local mt = getmetatable(tbl)
-   local self = mt and mt.___TableLock
+   local self = mt and mt[hook]
    if not self or not self.enabled then
       return cb()
    end
@@ -310,7 +313,7 @@ function attach_self(tbl)
       setmetatable(tbl, mt)
    end
 
-   local self = mt.___TableLock
+   local self = mt[hook]
    if not self then
       self = {
          hooked   = false,
@@ -318,7 +321,7 @@ function attach_self(tbl)
          declared = { },
       }
 
-      mt.___TableLock = self
+      mt[hook] = self
    end
 
    return mt, self

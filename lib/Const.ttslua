@@ -11,6 +11,9 @@ local attach_self
 -- The module.
 local Const = { }
 
+-- Constant.
+local hook = "__kintastic_Const"
+
 
 -- ================================================================================
 -- Public on_violation handlers.
@@ -119,13 +122,13 @@ function attach_self(tbl)
       setmetatable(tbl, mt)
    end
 
-   local self = mt.___Const
+   local self = mt[hook]
    if not self then
       self = {
          hooked = false,
       }
 
-      mt.___Const = self
+      mt[hook] = self
    end
 
    return mt, self
