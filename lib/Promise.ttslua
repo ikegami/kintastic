@@ -1,65 +1,24 @@
 -- ================================================================================
 -- Promise class
---
--- Compliant with the Promises/A+ spec.
--- https://promisesaplus.com/
---
--- Accomodations for the differences bewteen Lua and JavaScript:
--- - `then` is a reserved word in Lua, so `next` is used intead. [throughout, incl 1.1 and 2.3.3.1]
--- - The Lua equivalent to an object is a table. [1.2]
--- - The Lua equivalent to a function object is a table with a `__call` metamethod. [1.2, 2.3.3]
--- - While JS function can only return a single value, Lua functions can return a non-negative number of values.
---   The value of a fulfilled promise is meant to represent what a function returns, so one could conceivably
---   expect the value of a Lua promise to be a list of values. However, this module will adopt the JS-centric
---   approach of having exactly one value. [2.2.7.1]
--- - Lua doesn't have a TypeError class, so a string starting with "TypeError:" is used instead. [2.3.1]
--- - The Lua equivalent of calling a function as a method is to pass the invocant as the first argument. [2.3.3.3]
---
--- Resolution of Ambiguities:
--- - It is understood that returning nothing is the same as returning `undefined` (JS) or `nil` (Lua). [2.2.7.1]
--- - It is understood that returned values beyond the first are ignored.
--- - It is understood that once a promise adopts the state of another, its own state can no longer be changed except to mirror the other. [2.3.1.1]
--- - It is understood that being called with no arguments is the same as being called with `undefined` (JS) or `nil` (Lua). [2.3.3.3.1]
--- - It is understood that arguments beyond the first are ignored. [2.3.3.3.1]
---
--- Optimizations:
--- - `next` returns `self` if neither arguments are callable.
--- - When resolving, a prebuilt promise may be returned. [2.2.7.1]
---
+-- The PromiseClass module provides the actual class, while this
+-- module provides ways of constructing instances of that class.
+-- This allows us to have constructors and instances methods with the same name.
 -- ================================================================================
 
 -- Modules.
-local Async         = require("kintastic/lib/Async")
 local Introspection = require("kintastic/lib/Introspection")
 local Iters         = require("kintastic/lib/Iters")
-local Queue         = require("kintastic/lib/Queue")
+local PromiseClass  = require("kintastic/lib/PromiseClass")
 
 -- Imports.
-local async          = Async.async
 local is_callable    = Introspection.is_callable
 local is_instance_of = Introspection.is_instance_of
-local get_class      = Introspection.get_class
 local ivalues        = Iters.ivalues
 
--- Forward declarations for privates found at the bottom.
-local on_fulfilled_default, on_rejected_default
-local adopt_promise, adopt_promiselike
-local schedule
-local transition
-
--- The Class.
+-- The class.
 -- Contains only constuctors.
 -- Never instantiated.
 local Promise = { }
-
--- The real class.
--- This allows us to have constructors and
--- instance methods with the same name.
-local PromiseClass = { }
-
-Promise.mt = {
-   __index = PromiseClass,
-}
 
 
 -- ================================================================================
@@ -67,75 +26,9 @@ Promise.mt = {
 
 -- ----------------------------------------
 -- Public constructor Promise:new
---
--- Usage:
---    local promise = Promise:new(
---       function(resolve, reject)
---          ...
---          resolve(x)
---          ...
---          reject(reason)
---          ...
---       end
---    )
---
--- If `resolve` is called with a Promise or something Promise-like, `promise` becomes a mirror for the
--- state of `x`, effectively inserting `x` into the "chain" of Promises.
--- If `resolve` is called with something else, `promise` becomes fulfilled with the provided value.
--- If `resolve` is called without arguments, the promise will become fulfilled with `nil`.
--- `resolve` may be called asynchronously, after the provided function has returned.
--- `resolve` needs not be called at all.
--- Calls to `resolve` after `promise` has been fulfilled or rejected will be ignored.
---
--- If `reject` is called, the promise will become rejected with the provided reason.
--- `reject` may be called asynchronously, after the provided function has returned.
--- `reject` needs not be called at all.
--- Calls to `reject` after `promise` has been fulfilled or rejected will be ignored.
---
--- If the provided function throws an exception, `promise` will become rejected with the exception message.
---
--- It's possible to call `new()` with no arguments. The following is equilvalent to the earlier example:
---
---    local promise = Promise:new()
---    local success, rv = pcall(
---        function(
---           ...
---           promise:resolve(x)         -- or local resolve = promise:resolver(x)  resolve()
---           ...
---           promise:reject(reason)     -- or local reject = promise:rejecter(reason)  reject()
---           ...
---        end
---     )
---
---     if not success then
---        promise:reject(rv)
---     end
 
 function Promise.new(class, executor)
-   local self = setmetatable({}, class.mt)
-
-   self.class     = class    -- :next() uses this create promises of the same class as its invocant.
-   self.mirroring = false
-   self.state     = Promise.States.PENDING
-   self.value     = nil      -- value or reason
-   self.queue     = Queue:new()
-
-   if executor then
-      local success, rv = pcall(
-         function()
-            executor(
-               function(x)      self:resolve(x)     end,
-               function(reason) self:reject(reason) end
-            )
-         end
-      )
-
-      if not success then
-         self:reject(rv)
-      end
-   end
-
-   return self
+   return PromiseClass:new(executor)
 end
 
 
@@ -198,7 +91,7 @@ end
 
 function Promise.fulfill(class, value)
    local promise = Promise:new()
-   transition(promise, false, Promise.States.FULFILLED, value)
+   promise:_transition(false, Promise.States.FULFILLED, value)
    return promise
 end
 
@@ -210,7 +103,7 @@ end
 
 function Promise.reject(class, reason)
    local promise = Promise:new()
-   transition(promise, false, Promise.States.REJECTED, reason)
+   promise:_transition(false, Promise.States.REJECTED, reason)
    return promise
 end
 
@@ -244,11 +137,11 @@ function Promise.resolve(class, x)
          end
 
          if type(x) == "table" then
-            -- We specifically want to avoid ccessing x.next twice.
+            -- We specifically want to avoid accessing x.next twice.
             local next = x.next
             if is_callable(next) then
                local promise = class:new()
-               adopt_promiselike(promise, o, next)
+               promise:_adopt_promiselike(o, next)
                return promise
             end
          end
@@ -446,417 +339,14 @@ end
 
 
 -- ================================================================================
--- Public instance methods
-
--- ----------------------------------------
--- Public instance method promise:next
---
--- Usage:
---    local promise2 = promise:next(
---       function(value)
---          ...
---       end,
---       function(reason)
---          ...
---       end
---    )
---
--- "Waits" for `promise` to become fulfilled or rejected.
---
--- That is to say, it causes actions to be taken once the Promise `promise` becomes fulfilled or rejected.
--- The first function will be called once the promise becomes fulfilled.
--- The second function will be called once the promise becomes rejected.
--- If the promise is already fulfilled or rejected, the functions will be called shortly after `next()` is called.
--- These functions are called asynchronously, with only "platform code" on the stack.
---
--- If either function returns with a Promise or something Promise-like, `promise2` becomes a mirror for
--- the state of this promise, effectively inserting the returned promise into the "chain" of Promises.
--- If either function returns something else, `promise2` will become fulfilled with the first returned value.
--- If either function returns nothing, `promise2` will become fulfilled with the value `nil`.
--- If either function throws an error, `promise2` will become rejected with the exception as the reason.
---
--- The arguments are optional.
--- The first defaults to a function that returns its argument.
--- The second defaults to a function that calls error with its argument.
-
-function PromiseClass:next(on_fulfilled, on_rejected)
-   local on_fulfilled_callable = is_callable(on_fulfilled)
-   local on_rejected_callable  = is_callable(on_rejected)
-   if not on_fulfilled_callable and not on_rejected_callable then
-      return self
-   end
-
-   -- This promise will become fulfilled or rejected in on_state_change.
-   local promise = self.class:new()
-
-   self.queue:enqueue({
-      on_fulfilled = on_fulfilled_callable and on_fulfilled or on_fulfilled_default,
-      on_rejected  = on_rejected_callable  and on_rejected  or on_rejected_default,
-      next_promise = promise,
-   })
-
-   if self.state ~= Promise.States.PENDING then
-      schedule(self)
-   end
-
-   return promise
-end
-
-
--- ----------------------------------------
--- Public instance method promise:done
---
--- A sink used to ensure errors are reported.
--- The arguments are optional.
-
-function PromiseClass:done(on_fulfilled, on_rejected)
-   if on_fulfilled or on_rejected then
-      self = self:next(on_fulfilled, on_rejected)
-   end
-
-   return
-      self:next(
-         nil,
-         function(reason)
-            broadcastToAll(reason, Color.Red)
-         end
-      )
-end
-
-
--- ----------------------------------------
--- Public instance method promise:catch
-
-function PromiseClass:catch(on_rejected)
-   return self:next(nil, on_rejected)
-end
-
-
--- ----------------------------------------
--- Public instance method promise:finally
-
-function PromiseClass:finally(on_finally)
-   return self:next(
-      function(value)  on_finally() return value  end,
-      function(reason) on_finally() error(reason) end
-   )
-end
-
-
--- ----------------------------------------
--- Public instance method promise:sleep
---
--- WARNING: DEPRECATED/OBSOLETE.
--- Instead of promise:sleep(secs),        use promise:finally(TtsWait.time(secs))
--- Instead of promise:sleep(secs, false), use promise:finally(TtsWait.time(secs))
--- Instead of promise:sleep(secs, true),  use promise:next(TtsWait.time(secs))
--- TtsWait refers to the kintastic/Promise/TtsWait module.
-
-function PromiseClass:sleep(secs, only_sleep_on_resolve)
-   return self:next(
-      function(value)
-         return self.class:new(
-            function(resolve, reject)
-               Wait.time(||resolve(value), secs)
-            end
-         )
-      end,
-      function(reason)
-         if only_sleep_on_resolve then
-            error(reason)
-         end
-
-         return self.class:new(
-            function(resolve, reject)
-               Wait.time(||reject(reason), secs)
-            end
-         )
-      end
-   )
-end
-
-
--- ----------------------------------------
--- Public instance method promise:frame_skip
---
--- WARNING: DEPRECATED/OBSOLETE.
--- Instead of promise:frame_skip(), use promise:finally(TtsWait.frames(1))
--- TtsWait refers to the kintastic/Promise/TtsWait module.
-
-function PromiseClass:frame_skip()
-   return self:next(
-      function(value)
-         return self.class:new(
-            function(resolve, reject)
-               Wait.frames(||resolve(value), 1)
-            end
-         )
-      end,
-      function(reason)
-         return self.class:new(
-            function(resolve, reject)
-               Wait.frames(||reject(reason), 1)
-            end
-         )
-      end
-   )
-end
-
-
--- ================================================================================
 -- Semi-public
 -- You probably shouldn't be using these directly.
 
 -- ----------------------------------------
 -- Semi-public state constants.
 
-Promise.States = {
-   PENDING   = "pending",
-   FULFILLED = "fulfilled",
-   REJECTED  = "rejected",
-}
+Promise.States = PromiseClass.States
 
-
--- ----------------------------------------
--- Semi-public instance methods promise:resolver and promise:rejecter
---
--- These return functions that call resolve and reject repectively.
--- Useful where a callback is expected.
--- Arguments passed to the returned functions are ignored.
-
-function PromiseClass:resolver(x)      return function() self:resolve(x)     end end
-function PromiseClass:rejecter(reason) return function() self:reject(reason) end end
-
-
--- ----------------------------------------
--- Semi-public instance methods promise:fulfill and promise:reject
---
--- Marks the Promise as fulfilled or rejected if it's pending and if it isn't mirroring.
-
-function PromiseClass:fulfill(value) transition(self, false, Promise.States.FULFILLED, value) end
-function PromiseClass:reject(reason) transition(self, false, Promise.States.REJECTED, reason) end
-
-
--- ----------------------------------------
--- Semi-Public instance method promise:resolve
--- ** This is a different method than class method Promise:resolve **
---
--- If `Promise:resolve` is called with a Promise or something Promise-like, `promise` becomes a mirror for the
--- state of `x`, effectively inserting `x` into the "chain" of Promises.
--- If `Promise:resolve` is called with something else, `promise` becomes fulfilled with the provided value.
--- If `Promise:resolve` is called without arguments, the promise will become fulfilled with `nil`.
--- Calls to this function with an invocant (`self`) that has been fulfilled or rejected has no effect.
--- Calls to this function with an invocant (`self`) that is mirroring has no effect.
-
-function PromiseClass:resolve(x)
-   if self.state ~= Promise.States.PENDING or self.mirroring then
-      return
-   end
-
-   local success, rv = pcall(
-      function()
-         if is_instance_of(x, PromiseClass) then
-            adopt_promise(self, x)
-            return
-         end
-
-         if type(x) == "table" then
-            local next = x.next
-            if is_callable(next) then
-               adopt_promiselike(self, x, next)
-               return
-            end
-         end
-
-         self:fulfill(x)
-      end
-   )
-
-   if not success then
-      self:reject(rv)
-   end
-end
-
-
--- ================================================================================
--- Privates
-
--- ----------------------------------------
--- Default values for `next`'s arguments.
-
-function on_fulfilled_default(value)
-   return value
-end
-
-
-function on_rejected_default(reason)
-   error(reason)
-end
-
-
--- ----------------------------------------
--- Private instance method promise:adopt_promise
---
--- Causes the promise (`self`) to mirror the state of another Promise (`promise_to_mirror`).
---
--- Usage:
---    if promise.state == Promise.States.PENDING and not promise.mirroring then
---       local success, rv = pcall(
---          function()
---             adopt_promise(promise, promise_to_mirror)
---          end
---       end
---
---       if not success then
---          promise:reject(rv)
---       end
---    end
-
-function adopt_promise(self, promise_to_mirror)
-   if self == promise_to_mirror then
-      self:reject("TypeError: A promise can't adopt itself")
-      return
-   end
-
-   -- `self`'s state is entirely dependent on `promise_to_mirror`'s now.
-   self.mirroring = true
-
-   -- Optimization
-   if promise_to_mirror.state ~= Promise.States.PENDING then
-      transition(self, true, promise_to_mirror.state, promise_to_mirror.value)
-      return
-   end
-
-   promise_to_mirror:next(
-      function(value)
-         transition(self, true, Promise.States.FULFILLED, value)
-      end,
-      function(reason)
-         transition(self, true, Promise.States.REJECTED, reason)
-      end
-   )
-end
-
-
--- ----------------------------------------
--- Private instance method promise:adopt_promiselike
---
--- Causes the promise (`self`) to mirror the state of a Promise-like object (`promiselike_to_mirror`).
---
--- Usage:
---    if promise.state == Promise.States.PENDING and not promise.mirroring then
---       local success, rv = pcall(
---          function()
---             adopt_promiselike(promise, promiselike, promiselike.next)
---          end
---       end
---
---       if not success then
---          promise:reject(rv)
---       end
---    end
-
-function adopt_promiselike(self, promiselike_to_mirror, next)
-   if self == promiselike_to_mirror then
-      self:reject("TypeError: A promise can't adopt itself")
-      return
-   end
-
-   -- `self`'s state is entirely dependent on `promiselike_to_mirror`'s now.
-   self.mirroring = true
-
-   async(
-      function()
-         local success, rv = pcall(
-            function()
-               next(promiselike_to_mirror,
-                  function(y)      self:resolve(y)     end,
-                  function(reason) self:reject(reason) end
-               )
-            end
-         )
-
-         if not success then
-            self:reject(rv)
-         end
-      end
-   )
-end
-
-
--- ----------------------------------------
--- Private instance method promise:on_state_change
---
--- This method represents the core functionality of promises.
---
--- Once a Promise (`self`) becomes fulfilled or rejected, this is called.
--- This method calls one of the callbacks provided to `self.next()`.
--- This will lead to the Promise returned by `self.next()` (`next_promise`)
--- to become fulfilled or rejected.
---
--- This can happen immediately on return of the callback, or it may happen
--- later if the callback returns a Promise (or something Promise-like). If a
--- Promise or similar is returned, `next_promise` becomes a mirror for the
--- state of this promise, effectively inserting the returned promise into
--- the "chain" of Promises.
-
-local function on_state_change(self, on_fulfilled, on_rejected, next_promise)
-   local cb
-   if self.state == Promise.States.FULFILLED then
-      cb = on_fulfilled
-   else
-      cb = on_rejected
-   end
-
-   local success, x = pcall(cb, self.value)
-   if success then
-      next_promise:resolve(x)
-   else
-      next_promise:reject(x)
-   end
-end
-
-
--- ----------------------------------------
--- Private instance method promise:schedule
---
--- Schedule the Promise's `.next()` callbacks for asynchronous execution.
--- Called when a Promise becomes fulfilled or rejected, and when `.next()`
--- is called on an already-fulfilled or already-rejected Promise.
-
-function schedule(self)
-   local queue = self.queue
-   while not queue:is_empty() do
-      local data = queue:dequeue()
-      async(on_state_change, self, data.on_fulfilled, data.on_rejected, data.next_promise)
-   end
-end
-
-
--- ----------------------------------------
--- Private instance method promise:transition
---
--- Called to mark a Promise as fulfilled or rejected.
--- It causes `.next()` callbacks to be scheduled.
---
--- If `self` has already become fulfilled or rejected
--- calling this method has no effect.
---
--- If `self` is mirroring another Promise or promise-like object,
--- calling this method has no effect unless `force` is true.
-
-function transition(self, force, state, value)
-   if self.state == Promise.States.PENDING and ( force or not self.mirroring ) then
-      self.state = state
-      self.value = value
-      schedule(self)
-   end
-end
-
-
--- ================================================================================
--- Semi-public
--- You probably shouldn't be using these directly.
 
 -- ----------------------------------------
 -- Semi-public pregenerated promises.
