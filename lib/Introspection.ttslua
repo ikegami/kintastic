@@ -64,7 +64,7 @@ function Introspection.is_callable(_)
    while true do
       local t = type(_)
       if t == "function" then return true  end
-      if t == "table"    then return false end
+      if t ~= "table"    then return false end
 
       local mt = getmetatable(_)
       if not mt then
