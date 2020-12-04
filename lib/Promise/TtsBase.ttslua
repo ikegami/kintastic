@@ -25,6 +25,9 @@ local TtsBase = { }
 -- If a `callback_function` argument is provided, the returned promise will
 -- adopt the value returned by the callback function.
 --
+-- If a `return_obj` argument is provided and true, the spawned object will
+-- be returned as a second value.
+--
 -- You may replace the global spawnObject with this function.
 
 local wrapped_spawn_object = spawnObject
@@ -42,6 +45,9 @@ end
 --
 -- If a `callback_function` argument is provided, the returned promise will
 -- adopt the value returned by the callback function.
+--
+-- If a `return_obj` argument is provided and true, the spawned object will
+-- be returned as a second value.
 --
 -- You may replace the global spawnObjectData with this function.
 
@@ -61,6 +67,9 @@ end
 -- If a `callback_function` argument is provided, the returned promise will
 -- adopt the value returned by the callback function.
 --
+-- If a `return_obj` argument is provided and true, the spawned object will
+-- be returned as a second value.
+--
 -- You may replace the global spawnObjectJSON with this function.
 
 local wrapped_spawn_object_json = spawnObjectJSON
@@ -74,10 +83,11 @@ end
 -- Privates
 
 -- ----------------------------------------
--- Public function spawner
+-- Private function spawner
 
 function spawner(wrapped_function, args)
-   return Promise:new(
+   local spawned_obj
+   local promise = Promise:new(
       function(resolve, reject)
          args = args and TableUtils.copy(args) or { }
 
@@ -90,9 +100,15 @@ function spawner(wrapped_function, args)
             args.callback_function = resolve
          end
 
-         wrapped_function(args)
+         spawned_object = wrapped_function(args)
       end
    )
+
+   if args.return_obj then
+      return promise, spawned_obj
+   else
+      return promise
+   end
 end
 
 

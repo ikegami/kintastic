@@ -39,7 +39,7 @@ end
 -- ----------------------------------------
 -- Public function TtsWait.condition_with_cancel
 --
--- This function is identical to TtsWait.condition except a second value is returned.
+-- This function is identical to `TtsWait.condition` except a second value is returned.
 -- It consists of a function which can be used to cancel the wait.
 -- Calling this function will result in the promise becoming rejected.
 -- The rejection reason will be the value passed to the function, or "Cancelled" if none was provided.

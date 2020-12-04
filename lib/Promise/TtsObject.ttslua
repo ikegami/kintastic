@@ -66,24 +66,34 @@ TtsObject.moveToZoneTopSmooth            = |obj, ...|wrap_smooth_transform(  obj
 --
 -- If a `callback_function` argument is provided, the returned promise will
 -- adopt the value returned by the callback function.
+--
+-- If a `return_obj` argument is provided and true, the spawned object will
+-- be returned as a second value.
 
 function TtsObject.takeObject(obj, args)
-   return Promise:new(
+   local spawned_obj
+   local promise = Promise:new(
       function(resolve, reject)
          args = args and TableUtils.copy(args) or { }
 
          if args.callback_function then
             local orig_cb = args.callback_function
-            args.callback_function = function(obj)
-               resolve(orib_cb(obj))
+            args.callback_function = function(spawned_obj)
+               resolve(orib_cb(spawned_obj))
             end
          else
             args.callback_function = resolve
          end
 
-         obj.takeObject(args)
+         spawned_obj = obj.takeObject(args)
       end
    )
+
+   if args.return_obj then
+      return promise, spawned_obj
+   else
+      return promise
+   end
 end
 
 
