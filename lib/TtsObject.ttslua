@@ -2,8 +2,37 @@
 -- Extensions for TTS's Objects.
 -- ================================================================================
 
+-- Modules.
+local ArrayUtils = require("kintastic/lib/ArrayUtils")
+
+-- Imports.
+local make_set = ArrayUtils.make_set
+
 -- The module.
 local TtsObject = { }
+
+
+-- ================================================================================
+-- Private constants.
+
+local FINITE_CONTAINERS = {   -- .name
+   "Bag",
+   "CheckerStack",
+   "ChipStack",
+   "Custom_Model_Bag",
+   "Custom_Token_Stack",
+   "Deck",
+}
+
+local INFINITE_CONTAINERS = {   -- .name
+   "Custom_Model_Infinite_Bag",
+   "go_game_bowl_black",
+   "go_game_bowl_white",
+   "Infinite_Bag",
+}
+
+local IS_FINITE_CONTAINER_LOOKUP   = make_set(FINITE_CONTAINERS)
+local IS_INFINITE_CONTAINER_LOOKUP = make_set(INFINITE_CONTAINERS)
 
 
 -- ================================================================================
@@ -145,6 +174,20 @@ function TtsObject.get_drop_pos(obj, container)
    pos.y = pos.y + TtsObject.get_height_to_origin(obj)
    return pos
 end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.is_container
+-- Public function TtsObject.is_finite_container
+-- Public function TtsObject.is_infinite_container
+
+function TtsObject.is_container(obj)
+   local name = obj.name
+   return IS_FINITE_CONTAINER_LOOKUP[name] or IS_INFINITE_CONTAINER_LOOKUP[name]
+end
+
+function TtsObject.is_finite_container(obj)   return IS_FINITE_CONTAINER_LOOKUP[ obj.name ]   end
+function TtsObject.is_infinite_container(obj) return IS_INFINITE_CONTAINER_LOOKUP[ obj.name ] end
 
 
 -- ----------------------------------------
