@@ -113,6 +113,32 @@ end
 
 
 -- ----------------------------------------
+-- Public function TtsObject.setState
+--
+-- This is a thin wrapper around `obj.setState` that returns a promise that
+-- becomes fulfilled once the object has changed state.
+--
+-- If the `return_obj` argument is provided and true, the new object will
+-- be returned as a second value.
+
+function TtsObject.setState(obj, state_id, return_obj)
+   local new_obj
+   local promise = Promise:new(
+      function(resolve, reject)
+         new_obj = obj.setState(state_id)
+         wait_for_instant_transform(new_obj, resolve, reject)
+      end
+   )
+
+   if return_obj then
+      return promise, new_obj
+   else
+      return promise
+   end
+end
+
+
+-- ----------------------------------------
 
 function TtsObject.addForce()           error("addForce isn't currently supported")           end
 function TtsObject.addTorque()          error("addTorque isn't currently supported")          end
