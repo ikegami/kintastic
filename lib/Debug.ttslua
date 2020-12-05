@@ -49,7 +49,7 @@ function Debug.dd(a, b)
    if b then
       print(a .. " " .. logString(b))
    else
-      print(            logString(b))
+      print(            logString(a))
    end
 end
 
