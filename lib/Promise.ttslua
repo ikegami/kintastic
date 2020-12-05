@@ -6,6 +6,7 @@
 -- ================================================================================
 
 -- Modules.
+local Errors        = require("kintastic/lib/Errors")
 local Introspection = require("kintastic/lib/Introspection")
 local Iters         = require("kintastic/lib/Iters")
 local PromiseClass  = require("kintastic/lib/PromiseClass")
@@ -77,7 +78,7 @@ end
 function Promise.timeout(class, seconds)
    return class:new(
       function(resolve, reject)
-         Wait.time(||reject("Timeout"), seconds)
+         Wait.time(||reject(Errors.ETIMEOUT), seconds)
       end
    )
 end

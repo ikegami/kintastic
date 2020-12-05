@@ -1,0 +1,21 @@
+-- ================================================================================
+-- Errors returned by this library.
+-- Currently just string, but could be one day become objects.
+-- So use these constants rather than the strings.
+-- ================================================================================
+
+-- Modules.
+local Const     = require("kintastic/lib/Const")
+local TableLock = require("kintastic/lib/TableLock")
+
+-- Imports.
+local const = Const.const
+local lock  = TableLock.lock
+
+-- The module.
+return const(lock({
+   EDESTROYED    = "Destroyed",
+   ENOTCONTAINER = "Not a container",
+   ETIMEOUT      = "Timeout",
+   ETYPE         = "TypeError",
+}))

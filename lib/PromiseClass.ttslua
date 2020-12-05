@@ -15,7 +15,7 @@
 --   The value of a fulfilled promise is meant to represent what a function returns, so one could conceivably
 --   expect the value of a Lua promise to be a list of values. However, this module will adopt the JS-centric
 --   approach of having exactly one value. [2.2.7.1]
--- - Lua doesn't have a TypeError class, so a string starting with "TypeError:" is used instead. [2.3.1]
+-- - Lua doesn't have a TypeError class, so Errors.ETYPE is used instead. [2.3.1]
 -- - The Lua equivalent of calling a function as a method is to pass the invocant as the first argument. [2.3.3.3]
 --
 -- Resolution of Ambiguities:
@@ -33,6 +33,7 @@
 
 -- Modules.
 local Async         = require("kintastic/lib/Async")
+local Errors        = require("kintastic/lib/Errors")
 local Introspection = require("kintastic/lib/Introspection")
 local Queue         = require("kintastic/lib/Queue")
 
@@ -403,7 +404,7 @@ end
 
 function PromiseClass:_adopt_promise(promise_to_mirror)
    if self == promise_to_mirror then
-      self:reject("TypeError: A promise can't adopt itself")
+      self:reject(Errors.ETYPE)   -- A promise can't adopt itself.
       return
    end
 
@@ -447,7 +448,7 @@ end
 
 function PromiseClass:_adopt_promiselike(promiselike_to_mirror, next)
    if self == promiselike_to_mirror then
-      self:reject("TypeError: A promise can't adopt itself")
+      self:reject(Errors.ETYPE)   -- A promise can't adopt itself
       return
    end
 
