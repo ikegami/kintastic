@@ -54,15 +54,11 @@ local IS_ZONE_LOOKUP               = make_set(ZONES)
 -- allowing any combination to be performed at once.
 
 function TtsObject.setTransform(obj, args)
-   return Promise:new(
-      function(resolve, reject)
-         args = args or { }
+   args = args or { }
 
-         if args.position then obj.setPosition( args.position ) end
-         if args.rotation then obj.setRotation( args.rotation ) end
-         if args.scale    then obj.setScale(    args.scale    ) end
-      end
-   )
+   if args.position then obj.setPosition( args.position ) end
+   if args.rotation then obj.setRotation( args.rotation ) end
+   if args.scale    then obj.setScale(    args.scale    ) end
 end
 
 
@@ -73,14 +69,10 @@ end
 -- allowing any combination to be performed at once.
 
 function TtsObject.setTransformSmooth(obj, args)
-   return Promise:new(
-      function(resolve, reject)
-         args = args or { }
+   args = args or { }
 
-         if args.position then obj.setPositionSmooth( args.position, args.collide, args.fast ) end
-         if args.rotation then obj.setRotationSmooth( args.rotation, args.collide, args.fast ) end
-      end
-   )
+   if args.position then obj.setPositionSmooth( args.position, args.collide, args.fast ) end
+   if args.rotation then obj.setRotationSmooth( args.rotation, args.collide, args.fast ) end
 end
 
 
