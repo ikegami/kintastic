@@ -15,6 +15,7 @@ local lock  = TableLock.lock
 -- The module.
 return const(lock({
    EDESTROYED    = "Destroyed",
+   EEMPTY        = "Empty container",
    ENOTCONTAINER = "Not a container",
    ETIMEOUT      = "Timeout",
    ETYPE         = "TypeError",

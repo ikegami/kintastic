@@ -65,8 +65,9 @@ TtsObject.moveToZoneTopSmooth            = |obj, ...|wrap_smooth_transform(  obj
 -- This is a thin wrapper around `obj.takeObject` that returns a promise that
 -- becomes fulfilled with the spawned object once the object has been created.
 --
--- The promise is rejected with reason Errors.ENOTCONTAINER if `obj.takeObject`
--- returns `nil`.
+-- The promise is rejected with reason Errors.EEMPTY if `obj.takeObject` is empty.
+-- Note that empty infinite bags results in an exception.
+-- The promise is rejected with reason Errors.ENOTCONTAINER if `obj.takeObject` returns `nil`.
 --
 -- If a `callback_function` argument is provided, the returned promise will
 -- adopt the value returned by the callback function.
@@ -87,6 +88,13 @@ function TtsObject.takeObject(obj, args)
             end
          else
             args.callback_function = resolve
+         end
+
+         -- Empty containers result in an error rather than a return of nil.
+         -- Let's try to provide a better result.
+         if TtsObject.is_finite_container(obj) and obj.getQuantity() == 0 then
+            reject(Errors.EEMPTY)
+            return
          end
 
          spawned_obj = obj.takeObject(args)
