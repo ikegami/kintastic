@@ -60,7 +60,7 @@ function GridUtils.create_rect_grid(params)
    for row_ofs = 0, num_rows-1 do
       for col_ofs = 0, num_cols-1 do
          table.insert(grid, {
-            position = horz_displ:copy():scale(col_ofs):add(origin)
+            position = horz_displ:copy():scale(col_ofs):add(origin),
             rotation = rotation:copy(),
          })
       end

@@ -42,10 +42,10 @@ function Encode.string_to_code_points(s)
       elseif cp < 0xE000 then
          -- Low surrogate without preceding high surrogate.
          return 0xFFFD
-      elseif cp < 0x10000
+      elseif cp < 0x10000 then
          -- Not a surrogate.
          return cp
-      elseif cp < 0x110000
+      elseif cp < 0x110000 then
          -- Just in case!
          return cp
       else
@@ -61,7 +61,7 @@ end
 
 function Encode.encode_utf8(s)
    local encoded = ""
-   for i = 1 to #s do
+   for i = 1, #s do
       if cp < 0x80 then
          encoded = encoded .. string.char(cp)
       elseif cp < 0x800 then
