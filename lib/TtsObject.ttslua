@@ -56,9 +56,11 @@ local IS_ZONE_LOOKUP               = make_set(ZONES)
 function TtsObject.setTransform(obj, args)
    args = args or { }
 
-   if args.position then obj.setPosition( args.position ) end
-   if args.rotation then obj.setRotation( args.rotation ) end
-   if args.scale    then obj.setScale(    args.scale    ) end
+   local result = true
+   if args.position then result = obj.setPosition( args.position ) and result end
+   if args.rotation then result = obj.setRotation( args.rotation ) and result end
+   if args.scale    then result = obj.setScale(    args.scale    ) and result end
+   return result
 end
 
 
@@ -71,8 +73,10 @@ end
 function TtsObject.setTransformSmooth(obj, args)
    args = args or { }
 
-   if args.position then obj.setPositionSmooth( args.position, args.collide, args.fast ) end
-   if args.rotation then obj.setRotationSmooth( args.rotation, args.collide, args.fast ) end
+   local result = true
+   if args.position then result = obj.setPositionSmooth( args.position, args.collide, args.fast ) and result end
+   if args.rotation then result = obj.setRotationSmooth( args.rotation, args.collide, args.fast ) and result end
+   return result
 end
 
 
@@ -90,8 +94,10 @@ function TtsObject.moveToZoneTop(obj, zone)
    pos.y = pos.y + math.abs(zone.getScale().y) / 2
    local rot = zone.getRotation()
 
-   obj.setPosition(pos)
-   obj.setRotation(rot)
+   local result = true
+   result = obj.setPosition(pos) and result
+   result = obj.setRotation(rot) and result
+   return result
 end
 
 
@@ -109,8 +115,10 @@ function TtsObject.moveToZoneTopSmooth(obj, zone)
    pos.y = pos.y + math.abs(zone.getScale().y) / 2
    local rot = zone.getRotation()
 
-   obj.setPositionSmooth(pos)
-   obj.setRotationSmooth(rot)
+   local result = true
+   result = obj.setPositionSmooth(pos) and result
+   result = obj.setRotationSmooth(rot) and result
+   return result
 end
 
 
