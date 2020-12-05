@@ -28,20 +28,13 @@ Debug.require = require
 
 
 -- ----------------------------------------
--- Public function Debug.O
---
--- An alias for getObjectFromGUID.
+-- Public function Debug.get_host
 
-Debug.O = getObjectFromGUID
-
-
--- ----------------------------------------
--- Public constant Debug.host
-
-for i, player in ipairs(Player.getPlayers()) do
-   if player.host then
-      Debug.host = player
-      break
+function get_host()
+   for i, player in ipairs(Player.getPlayers()) do
+      if player.host then
+         return player
+      end
    end
 end
 
@@ -62,6 +55,16 @@ function Debug.dd(a, b)
       print(            logString(a))
    end
 end
+
+
+-- ----------------------------------------
+-- Public function Debug.O
+-- Public function Debug.H
+-- Public function Debug.HC
+
+Debug.O  = getObjectFromGUID
+Debug.H  = Debug.get_host
+Debug.HC = ||Debug.get_host().color
 
 
 -- ================================================================================
