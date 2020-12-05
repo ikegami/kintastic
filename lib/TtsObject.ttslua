@@ -31,8 +31,17 @@ local INFINITE_CONTAINERS = {   -- .name
    "Infinite_Bag",
 }
 
-local IS_FINITE_CONTAINER_LOOKUP   = make_set(FINITE_CONTAINERS)
+local ZONES = {   -- .name
+   "FogOfWar",
+   "FogOfWarTrigger",
+   "RandomizeTrigger",
+   "ScriptingTrigger",
+   -- No objects for hand zone.
+}
+
 local IS_INFINITE_CONTAINER_LOOKUP = make_set(INFINITE_CONTAINERS)
+local IS_FINITE_CONTAINER_LOOKUP   = make_set(FINITE_CONTAINERS)
+local IS_ZONE_LOOKUP               = make_set(ZONES)
 
 
 -- ================================================================================
@@ -138,13 +147,39 @@ function TtsObject.get_abs_depth(obj)  return obj.getBounds().size.z end
 function TtsObject.get_top_pos(obj)
    local bounds = obj.getBounds()
 
-   if obj.name == "ScriptingTrigger" then
+   -- getBounds().size is broken for zones.
+   if TtsObject.is_zone(obj) then
       bounds.size = obj.getScale()
    end
 
    local x = bounds.center.x
    local z = bounds.center.z
    local y = bounds.center.y + bounds.size.y / 2
+   return Vector(x, y, z)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.get_bot_pos
+--
+-- Returns the position which consists
+-- - the center x of the object's bounding box,
+-- - the center z of the object's bounding box, and
+-- - the lowest y of the object's bounding box.
+--
+-- The result is based on the object's current orientation.
+
+function TtsObject.get_bot_pos(obj)
+   local bounds = obj.getBounds()
+
+   -- getBounds().size is broken for zones.
+   if TtsObject.is_zone(obj) then
+      bounds.size = obj.getScale()
+   end
+
+   local x = bounds.center.x
+   local z = bounds.center.z
+   local y = bounds.center.y - bounds.size.y / 2
    return Vector(x, y, z)
 end
 
@@ -186,8 +221,13 @@ function TtsObject.is_container(obj)
    return IS_FINITE_CONTAINER_LOOKUP[name] or IS_INFINITE_CONTAINER_LOOKUP[name]
 end
 
-function TtsObject.is_finite_container(obj)   return IS_FINITE_CONTAINER_LOOKUP[ obj.name ]   end
-function TtsObject.is_infinite_container(obj) return IS_INFINITE_CONTAINER_LOOKUP[ obj.name ] end
+function TtsObject.is_finite_container(obj)
+   return IS_FINITE_CONTAINER_LOOKUP[ obj.name ]
+end
+
+function TtsObject.is_infinite_container(obj)
+   return IS_INFINITE_CONTAINER_LOOKUP[ obj.name ]
+end
 
 
 -- ----------------------------------------
@@ -207,6 +247,14 @@ end
 
 function TtsObject.is_stack(obj)
    return TtsObject.is_stackable(obj) and obj.getQuantity() > 1
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.is_zone
+
+function TtsObject.is_zone(obj)
+   return IS_ZONE_LOOKUP[ obj.name ]
 end
 
 
