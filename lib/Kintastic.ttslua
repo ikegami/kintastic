@@ -1,0 +1,41 @@
+-- ================================================================================
+-- This module is used to include all of this library's modules in a TTS module.
+-- ================================================================================
+
+return {
+   [ "kintastic/lib/ArrayUtils"           ] = require("kintastic/lib/ArrayUtils"),
+   [ "kintastic/lib/Crc32"                ] = require("kintastic/lib/Crc32"),
+   [ "kintastic/lib/DictUtils"            ] = require("kintastic/lib/DictUtils"),
+   [ "kintastic/lib/Encode"               ] = require("kintastic/lib/Encode"),
+   [ "kintastic/lib/Errors"               ] = require("kintastic/lib/Errors"),
+   [ "kintastic/lib/GridUtils"            ] = require("kintastic/lib/GridUtils"),
+   [ "kintastic/lib/Introspection"        ] = require("kintastic/lib/Introspection"),
+   [ "kintastic/lib/Iters"                ] = require("kintastic/lib/Iters"),
+   [ "kintastic/lib/ObjUtils"             ] = require("kintastic/lib/ObjUtils"),
+   [ "kintastic/lib/Queue"                ] = require("kintastic/lib/Queue"),
+   [ "kintastic/lib/Semaphore"            ] = require("kintastic/lib/Semaphore"),
+   [ "kintastic/lib/StrUtils"             ] = require("kintastic/lib/StrUtils"),
+   [ "kintastic/lib/TableUtils"           ] = require("kintastic/lib/TableUtils"),
+
+   -- TTS-specific.
+   [ "kintastic/lib/TtsMsgUtils"          ] = require("kintastic/lib/TtsMsgUtils"),
+   [ "kintastic/lib/TtsObject"            ] = require("kintastic/lib/TtsObject"),
+   [ "kintastic/lib/TtsObjUtils"          ] = require("kintastic/lib/TtsObjUtils"),
+   [ "kintastic/lib/TtsPlayerUtils"       ] = require("kintastic/lib/TtsPlayerUtils"),
+   [ "kintastic/lib/TtsZoneUtils"         ] = require("kintastic/lib/TtsZoneUtils"),
+
+   -- TTS-specific, meta.
+   [ "kintastic/lib/Debug"                ] = require("kintastic/lib/Debug"),
+   [ "kintastic/lib/WarningHandlers"      ] = require("kintastic/lib/WarningHandlers"),
+   [ "kintastic/lib/Const"                ] = require("kintastic/lib/Const"),
+   [ "kintastic/lib/TableLock"            ] = require("kintastic/lib/TableLock"),
+
+   -- TTS-specific, promises.
+   [ "kintastic/lib/Async"                ] = require("kintastic/lib/Async"),
+   [ "kintastic/lib/PromiseClass"         ] = require("kintastic/lib/PromiseClass"),
+   [ "kintastic/lib/Promise"              ] = require("kintastic/lib/Promise"),
+   [ "kintastic/lib/Promise/TtsBase"      ] = require("kintastic/lib/Promise/TtsBase"),
+   [ "kintastic/lib/Promise/TtsObject"    ] = require("kintastic/lib/Promise/TtsObject"),
+   [ "kintastic/lib/Promise/TtsWait"      ] = require("kintastic/lib/Promise/TtsWait"),
+   [ "kintastic/lib/Promise/TtsZoneUtils" ] = require("kintastic/lib/Promise/TtsZoneUtils"),
+}
