@@ -10,7 +10,9 @@ local TtsMsgUtils = { }
 
 
 -- ================================================================================
--- Constants
+-- Private constants
+
+local EMPTY_TABLE = { }
 
 local ERROR_COLOR = Color.Red
 local INFO_COLOR  = Color.White
@@ -109,7 +111,8 @@ end
 
 -- /execute require("kintastic/lib/TtsMsgUtils").pulse_obj(getObjectFromGUID("b1585e"), Color.Red, { init_color = Color.Blue })
 function TtsMsgUtils.pulse_obj(obj, color, opts)
-   opts = opts or { }
+   opts = opts or EMPTY_TABLE
+
    local pulse_dur          = opts.pulse_dur          or 1.2
    local num_steps_per_edge = opts.num_steps_per_edge or 6
    local num_pulses         = opts.num_pulses         or 4

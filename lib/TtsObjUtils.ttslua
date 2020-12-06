@@ -11,13 +11,19 @@ local TtsObjUtils = { }
 
 
 -- ================================================================================
+-- Private constants
+
+local EMPTY_TABLE = { }
+
+
+-- ================================================================================
 -- Public interface
 
 -- ----------------------------------------
 -- Public function TtsObjUtils.resolve_guids
 
 function TtsObjUtils.resolve_guids(tbl, not_required)
-   not_required = not_required or { }
+   not_required = not_required or EMPTY_TABLE
 
    local function helper(tbl)
       local resolved = { }

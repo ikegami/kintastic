@@ -13,7 +13,9 @@ local TtsObject = { }
 
 
 -- ================================================================================
--- Private constants.
+-- Private constants
+
+local EMPTY_TABLE = { }
 
 local FINITE_CONTAINERS = {   -- .name
    "Bag",
@@ -54,7 +56,7 @@ local IS_ZONE_LOOKUP               = make_set(ZONES)
 -- allowing any combination to be performed at once.
 
 function TtsObject.setTransform(obj, args)
-   args = args or { }
+   args = args or EMPTY_TABLE
 
    local result = true
    if args.position then result = obj.setPosition( args.position ) and result end
@@ -71,7 +73,7 @@ end
 -- allowing any combination to be performed at once.
 
 function TtsObject.setTransformSmooth(obj, args)
-   args = args or { }
+   args = args or EMPTY_TABLE
 
    local result = true
    if args.position then result = obj.setPositionSmooth( args.position, args.collide, args.fast ) and result end
