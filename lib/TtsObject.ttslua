@@ -85,20 +85,22 @@ end
 -- ----------------------------------------
 -- Public function TtsObject.moveToZoneTop
 --
--- Moves an object to the top of the specified zone.
--- Specifically, the object will be positions such that its
--- origin is centered on the center of the top of the zone.
--- The object will be rotated according to the zone's rotation.
+-- Moves an object so it sits above the center point of a zone.
 -- Uses instant movement.
+--
+-- Options:
+--   protrusion: How much of the object is above the container as a factor.
+--   offset:     This modifies the drop position.
 
-function TtsObject.moveToZoneTop(obj, zone)
-   local pos = zone.getPosition()
-   pos.y = pos.y + math.abs(zone.getScale().y) / 2
-   local rot = zone.getRotation()
-
+function TtsObject.moveToZoneTop(obj, zone, opts)
    local result = true
-   result = obj.setPosition(pos) and result
+
+   local rot = zone.getRotation()
    result = obj.setRotation(rot) and result
+
+   local pos = TtsObject.get_drop_pos(obj, zone, opts)
+   result = obj.setPosition(pos) and result
+
    return result
 end
 
@@ -106,20 +108,26 @@ end
 -- ----------------------------------------
 -- Public function TtsObject.moveToZoneTopSmooth
 --
--- Moves an object to the top of the specified zone.
--- Specifically, the object will be positions such that its
--- origin is centered on the center of the top of the zone.
--- The object will be rotated according to the zone's rotation.
+-- Moves an object so it sits above the center point of a zone.
 -- Uses smooth movement.
+--
+-- Options:
+--   protrusion: How much of the object is above the container as a factor.
+--   offset:     This modifies the drop position.
 
-function TtsObject.moveToZoneTopSmooth(obj, zone)
-   local pos = zone.getPosition()
-   pos.y = pos.y + math.abs(zone.getScale().y) / 2
-   local rot = zone.getRotation()
+function TtsObject.moveToZoneTopSmooth(obj, zone, opts)
+   local old_rot = obj.getRotation()
+   local new_rot = zone.getRotation()
 
    local result = true
+
+   result = obj.setRotation(new_rot) or result
+   local pos = TtsObject.get_drop_pos(obj, zone, opts)
+   result = obj.setRotation(old_rot) or result
+
    result = obj.setPositionSmooth(pos) and result
    result = obj.setRotationSmooth(rot) and result
+
    return result
 end
 
@@ -288,12 +296,26 @@ end
 -- Public function TtsObject.get_drop_pos
 --
 -- Returns the position to which to move the object so it sits just above the container.
---
 -- The result is based on the current orientation of both the object and the container.
+--
+-- Options:
+--   protrusion: How much of the object is above the container as a factor.
+--   offset:     This is added to the resulting vector.
 
-function TtsObject.get_drop_pos(obj, container)
+function TtsObject.get_drop_pos(obj, container, opts)
+   opts = opts or EMPTY_TABLE
+
+   local protrusion = opts.protrusion or 1
+   local offset     = opts.offset
+
    local pos = TtsObject.get_top_pos(container)
-   pos.y = pos.y + TtsObject.get_height_to_origin(obj)
+   local bounds = TtsObject.getBounds(obj)
+   pos.y = pos.y + bounds.offset.y + bounds.size.y * ( protrusion - 0.5 )
+
+   if offset then
+      pos = pos + Vector(offset)
+   end
+
    return pos
 end
 
