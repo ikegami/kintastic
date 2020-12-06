@@ -14,11 +14,8 @@ local Crc32 = { }
 
 -- ----------------------------------------
 -- Public function Crc32.calc_crc32
---
--- Usage:
---    local crc32 = Crc32.calc_crc32(string.unicode(s, 1, -1))
 
-function Crc32.calc_crc32(bytes)
+function Crc32.calc_crc32(bytes)   -- As as string.
    local crc32 = 0xFFFFFFFF
 
    local n = #bytes
@@ -27,7 +24,7 @@ function Crc32.calc_crc32(bytes)
          bit32.rshift(crc32, 8),
          precomputed[
             bit32.band(
-               bit32.bxor(crc32, bytes[i]),
+               bit32.bxor(crc32, string.unicode(bytes, i)),
                0xFF
             )
          ]
