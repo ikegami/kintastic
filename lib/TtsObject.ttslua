@@ -390,15 +390,15 @@ end
 
 function TtsObject.is_stackable(obj)
    local custom_obj = obj.getCustomObject()
-   return custom_obj and custom_obj.stackable
+   return custom_obj and custom_obj.stackable or false
 end
 
 
 -- ----------------------------------------
 -- Public function TtsObject.is_stack
 --
--- We can't just use getQuantity() because it
--- can return a positive value for bags.
+-- We can't just use `obj.getQuantity()` because it
+-- can return a positive value for containers.
 
 function TtsObject.is_stack(obj)
    return TtsObject.is_stackable(obj) and obj.getQuantity() > 1
