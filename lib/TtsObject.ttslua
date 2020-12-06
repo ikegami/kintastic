@@ -302,16 +302,23 @@ end
 -- Uses instant movement.
 --
 -- Options:
+--   rotation:   `false` to keep its current rotation (default),
+--               `true` to give the moved object the same rotation as the reference object, or
+--               a vector-like to give the object this rotation.
 --   protrusion: What portion of the object being moved should be atop the other. (Default = 1)
 --   offset:     A vector-like used to modify the destination position. (Default = {0,0,0})
 
-function TtsObject.moveAtop(obj, zone, opts)
+function TtsObject.moveAtop(obj, ref_obj, opts)
+   opts = opts or EMPTY_TABLE
+
    local result = true
 
-   local rot = zone.getRotation()
-   result = obj.setRotation(rot) and result
+   if opts.rotation then
+      local rot = opts.rotation == true and ref_obj.getRotation() or opts.rotation
+      result = obj.setRotation(rot) and result
+   end
 
-   local pos = TtsObject.get_drop_pos(obj, zone, opts)
+   local pos = TtsObject.get_drop_pos(obj, ref_obj, opts)
    result = obj.setPosition(pos) and result
 
    return result
@@ -325,21 +332,25 @@ end
 -- Uses smooth movement.
 --
 -- Options:
+--   rotation:   `false` to keep its current rotation (default),
+--               `true` to give the moved object the same rotation as the reference object, or
+--               a vector-like to give the object this rotation.
 --   protrusion: What portion of the object being moved should be atop the other. (Default = 1)
 --   offset:     A vector-like used to modify the destination position. (Default = {0,0,0})
+--   collide:    As the obj.setPositionSmooth/obj.setRotationSmooth argument.
+--   fast:       As the obj.setPositionSmooth/obj.setRotationSmooth argument.
 
-function TtsObject.moveToZoneTopSmooth(obj, zone, opts)
-   local old_rot = obj.getRotation()
-   local new_rot = zone.getRotation()
-
+function TtsObject.moveAtopSmooth(obj, ref_obj, opts)
    local result = true
 
+   local old_rot = obj.getRotation()
+   local new_rot = opts.rotation == true and ref_obj.getRotation() or opts.rotation
    result = obj.setRotation(new_rot) or result
-   local pos = TtsObject.get_drop_pos(obj, zone, opts)
+   local pos = TtsObject.get_drop_pos(obj, ref_obj, opts)
    result = obj.setRotation(old_rot) or result
 
-   result = obj.setPositionSmooth(pos) and result
-   result = obj.setRotationSmooth(rot) and result
+   result = obj.setPositionSmooth(pos,     opts.collide, opts.fast) and result
+   result = obj.setRotationSmooth(new_rot, opts.collide, opts.fast) and result
 
    return result
 end
