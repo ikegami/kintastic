@@ -125,15 +125,114 @@ end
 
 
 -- ----------------------------------------
+-- Public function TtsObject.getBounds
+--
+-- The results are based on the object's current orientation.
+--
+-- `obj.getBounds()` doesn't return the
+-- correct size for zones, but this does.
+
+function TtsObject.getBounds(obj)
+   local bounds = obj.getBounds()
+
+   if TtsObject.is_zone(obj) then
+      local rotation = obj.getRotation()
+      local size =
+         obj.getScale()
+         :rotateOver('z', rotation.z)
+         :rotateOver('x', rotation.x)
+         :rotateOver('y', rotation.y)
+
+      bounds.size = Vector(
+         math.abs(size.x),
+         math.abs(size.y),
+         math.abs(size.z)
+      )
+   end
+
+   return bounds
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.getBoundsNormalized
+--
+-- The result is based on the unrotated object.
+--
+-- `obj.getBoundsNormalized()` doesn't return the
+-- correct size for zones, but this does.
+
+
+function TtsObject.getBoundsNormalized(obj)
+   local bounds = obj.getBounds()
+
+   if TtsObject.is_zone(obj) then
+      bounds.size = obj.getScale()
+   end
+
+   return bounds
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.getSize
+--
+-- The result is based on the object's current orientation.
+--
+-- `obj.getBounds().size` doesn't return the
+--  correct value for zones, but this does.
+
+function TtsObject.getSize(obj)
+   if TtsObject.is_zone(obj) then
+      local rotation = obj.getRotation()
+      local size =
+         obj.getScale()
+         :rotateOver('z', rotation.z)
+         :rotateOver('x', rotation.x)
+         :rotateOver('y', rotation.y)
+
+      return Vector(
+         math.abs(size.x),
+         math.abs(size.y),
+         math.abs(size.z)
+      )
+   else
+      return obj.getBounds().size
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.getSizeNormalized
+--
+-- The result is based on the unrotated object.
+--
+-- `obj.getBoundsNormalized().size` doesn't return
+-- the correct value for zones, but this does.
+
+
+function TtsObject.getSize(obj)
+   if TtsObject.is_zone(obj) then
+      return obj.getScale()
+   else
+      return obj.getBoundsNormalized().size
+   end
+end
+
+
+-- ----------------------------------------
 -- Public function TtsObject.get_abs_width()
 -- Public function TtsObject.get_abs_height()
 -- Public function TtsObject.get_abs_depth()
 --
+-- These refer to the dimensions of the object
+-- along the x, y and z axes respectively.
+--
 -- The results are based on the object's current orientation.
 
-function TtsObject.get_abs_width(obj)  return obj.getBounds().size.x end
-function TtsObject.get_abs_height(obj) return obj.getBounds().size.y end
-function TtsObject.get_abs_depth(obj)  return obj.getBounds().size.z end
+function TtsObject.get_abs_width(obj)  return TtsObject.getSize(obj).x end
+function TtsObject.get_abs_height(obj) return TtsObject.getSize(obj).y end
+function TtsObject.get_abs_depth(obj)  return TtsObject.getSize(obj).z end
 
 
 -- ----------------------------------------
@@ -147,17 +246,10 @@ function TtsObject.get_abs_depth(obj)  return obj.getBounds().size.z end
 -- The result is based on the object's current orientation.
 
 function TtsObject.get_top_pos(obj)
-   local bounds = obj.getBounds()
-
-   -- getBounds().size is broken for zones.
-   if TtsObject.is_zone(obj) then
-      bounds.size = obj.getScale()
-   end
-
-   local x = bounds.center.x
-   local z = bounds.center.z
-   local y = bounds.center.y + bounds.size.y / 2
-   return Vector(x, y, z)
+   local bounds = TtsObject.getBounds(obj)
+   local v = bounds.center
+   v.y = v.y + bounds.size.y / 2
+   return v
 end
 
 
@@ -172,17 +264,10 @@ end
 -- The result is based on the object's current orientation.
 
 function TtsObject.get_bot_pos(obj)
-   local bounds = obj.getBounds()
-
-   -- getBounds().size is broken for zones.
-   if TtsObject.is_zone(obj) then
-      bounds.size = obj.getScale()
-   end
-
-   local x = bounds.center.x
-   local z = bounds.center.z
-   local y = bounds.center.y - bounds.size.y / 2
-   return Vector(x, y, z)
+   local bounds = TtsObject.getBounds(obj)
+   local v = bounds.center
+   v.y = v.y - bounds.size.y / 2
+   return v
 end
 
 
@@ -194,7 +279,7 @@ end
 -- The result is based on the object's current orientation.
 
 function TtsObject.get_height_to_origin(obj)
-   local bounds = obj.getBounds()
+   local bounds = TtsObject.getBounds(obj)
    return bounds.size.y / 2 + bounds.offset.y
 end
 
