@@ -10,13 +10,13 @@ local Encode = { }
 -- Public interface
 
 -- ----------------------------------------
--- Public function Encode.string_to_code_points
+-- Public function Encode.codepoints
 --
 -- The interpreter is only capabable of handling 16-bit characters,
 -- so code points above U+FFFF appear in strings as surrogate pairs.
 -- This function returns an iterator that returns the string as code points.
 
-function Encode.string_to_code_points(s)
+function Encode.codepoints(s)
    local i = 0
    local n = #s
    return function()
@@ -61,7 +61,7 @@ end
 
 function Encode.encode_utf8(s)
    local encoded = ""
-   for i = 1, #s do
+   for cp in Encode.codepoints(s) do
       if cp < 0x80 then
          encoded = encoded .. string.char(cp)
       elseif cp < 0x800 then
