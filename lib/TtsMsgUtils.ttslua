@@ -109,7 +109,6 @@ end
 -- The function returns a function that can be called
 -- to cancel the pulsing (if still ongoing).
 
--- /execute require("kintastic/lib/TtsMsgUtils").pulse_obj(getObjectFromGUID("b1585e"), Color.Red, { init_color = Color.Blue })
 function TtsMsgUtils.pulse_obj(obj, color, opts)
    opts = opts or EMPTY_TABLE
 
