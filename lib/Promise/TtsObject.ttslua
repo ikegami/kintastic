@@ -92,7 +92,7 @@ function TtsObject.takeObject(obj, args)
 
          -- Empty containers result in an error rather than a return of nil.
          -- Let's try to provide a better result.
-         if TtsObject.is_finite_container(obj) and obj.getQuantity() == 0 then
+         if TtsObject.is_finite_container(obj) and obj.getQuantity() == 0 and not obj.remainder then
             reject(Errors.EEMPTY)
             return
          end
