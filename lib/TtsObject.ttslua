@@ -216,8 +216,8 @@ end
 -- The result is based on the current orientation of both the object and the container.
 --
 -- Options:
---   protrusion: How much of the object is above the container as a factor.
---   offset:     This is added to the resulting vector.
+--   protrusion: What portion of the object should be atop the container. (Default = 1)
+--   offset:     A vector-like added to the result. (Default = {0,0,0})
 
 function TtsObject.get_drop_pos(obj, container, opts)
    opts = opts or EMPTY_TABLE
@@ -277,8 +277,8 @@ end
 -- Uses instant movement.
 --
 -- Options:
---   protrusion: What portion of the object being moved should be atop the other.
---   offset:     This modifies the destination position.
+--   protrusion: What portion of the object being moved should be atop the other. (Default = 1)
+--   offset:     A vector-like used to modify the destination position. (Default = {0,0,0})
 
 function TtsObject.moveAtop(obj, zone, opts)
    local result = true
@@ -300,8 +300,8 @@ end
 -- Uses smooth movement.
 --
 -- Options:
---   protrusion: What portion of the object being moved should be atop the other.
---   offset:     This modifies the destination position.
+--   protrusion: What portion of the object being moved should be atop the other. (Default = 1)
+--   offset:     A vector-like used to modify the destination position. (Default = {0,0,0})
 
 function TtsObject.moveToZoneTopSmooth(obj, zone, opts)
    local old_rot = obj.getRotation()
