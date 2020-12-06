@@ -98,7 +98,7 @@ function ArrayUtils.make_set(array, key_gen, val_gen)
       val_gen = function(_) return true end
    end
 
-   local set = {}
+   local set = { }
    for i, v in ipairs(array) do
       set[key_gen(v)] = val_gen(v)
    end

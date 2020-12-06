@@ -62,7 +62,7 @@ end
 -- If omitted or nil, they default to false.
 
 function TtsPlayerUtils.get_seated_players(incl_gm, incl_spec)
-   local seated = {}
+   local seated = { }
    for player in ivalues(Player.getPlayers()) do
       if
          player.seated and
@@ -84,7 +84,7 @@ end
 -- If omitted or nil, they default to false.
 
 function TtsPlayerUtils.get_seated_color_names(incl_gm, incl_spec)
-   local seated = {}
+   local seated = { }
    for player in ivalues(Player.getPlayers()) do
       if
          player.seated and
