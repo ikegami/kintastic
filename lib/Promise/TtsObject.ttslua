@@ -42,21 +42,25 @@ setmetatable(TtsObject, {
 -- Public function TtsObject.rotate
 -- Public function TtsObject.setScale
 -- Public function TtsObject.scale
--- Public function TtsObject.moveToZoneTop
--- Public function TtsObject.moveToZoneTopSmooth
+-- Public function TtsObject.moveAtop
+-- Public function TtsObject.moveAtopSmooth
+-- Public function TtsObject.moveToZoneTop         WARNING: DEPRECATED/OBSLETE.
+-- Public function TtsObject.moveToZoneTopSmooth   WARNING: DEPRECATED/OBSLETE.
 
-TtsObject.setTransform                   = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.setTransform,        obj, ... )
-TtsObject.setTransformSmooth             = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.setTransformSmooth,  obj, ... )
-TtsObject.setPosition                    = |obj, ...|wrap_instant_transform( obj, obj.setPosition,                        ... )
-TtsObject.setPositionSmooth              = |obj, ...|wrap_smooth_transform(  obj, obj.setPositionSmooth,                  ... )
-TtsObject.translate                      = |obj, ...|wrap_smooth_transform(  obj, obj.translate,                          ... )
-TtsObject.setRotation                    = |obj, ...|wrap_instant_transform( obj, obj.setRotation,                        ... )
-TtsObject.setRotationSmooth              = |obj, ...|wrap_smooth_transform(  obj, obj.setRotationSmooth,                  ... )
-TtsObject.rotate                         = |obj, ...|wrap_smooth_transform(  obj, obj.rotate,                             ... )
-TtsObject.setScale                       = |obj, ...|wrap_instant_transform( obj, obj.setScale,                           ... )
-TtsObject.scale                          = |obj, ...|wrap_instant_transform( obj, obj.scale,                              ... )
-TtsObject.moveToZoneTop                  = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.moveToZoneTop,       obj, ... )
-TtsObject.moveToZoneTopSmooth            = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.moveToZoneTopSmooth, obj, ... )
+TtsObject.setTransform        = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.setTransform,        obj, ... )
+TtsObject.setTransformSmooth  = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.setTransformSmooth,  obj, ... )
+TtsObject.setPosition         = |obj, ...|wrap_instant_transform( obj, obj.setPosition,                        ... )
+TtsObject.setPositionSmooth   = |obj, ...|wrap_smooth_transform(  obj, obj.setPositionSmooth,                  ... )
+TtsObject.translate           = |obj, ...|wrap_smooth_transform(  obj, obj.translate,                          ... )
+TtsObject.setRotation         = |obj, ...|wrap_instant_transform( obj, obj.setRotation,                        ... )
+TtsObject.setRotationSmooth   = |obj, ...|wrap_smooth_transform(  obj, obj.setRotationSmooth,                  ... )
+TtsObject.rotate              = |obj, ...|wrap_smooth_transform(  obj, obj.rotate,                             ... )
+TtsObject.setScale            = |obj, ...|wrap_instant_transform( obj, obj.setScale,                           ... )
+TtsObject.scale               = |obj, ...|wrap_instant_transform( obj, obj.scale,                              ... )
+TtsObject.moveAtop            = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.moveAtop,            obj, ... )
+TtsObject.moveAtopSmooth      = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.moveAtopSmooth,      obj, ... )
+TtsObject.moveToZoneTop       = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.moveAtop,            obj, ... )
+TtsObject.moveToZoneTopSmooth = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.moveAtopSmooth,      obj, ... )
 
 
 -- ----------------------------------------

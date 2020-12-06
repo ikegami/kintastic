@@ -50,89 +50,6 @@ local IS_ZONE_LOOKUP               = make_set(ZONES)
 -- Public interface
 
 -- ----------------------------------------
--- Public function TtsObject.setTransform
---
--- Wraps setPosition, setRotation and setScale,
--- allowing any combination to be performed at once.
-
-function TtsObject.setTransform(obj, args)
-   args = args or EMPTY_TABLE
-
-   local result = true
-   if args.position then result = obj.setPosition( args.position ) and result end
-   if args.rotation then result = obj.setRotation( args.rotation ) and result end
-   if args.scale    then result = obj.setScale(    args.scale    ) and result end
-   return result
-end
-
-
--- ----------------------------------------
--- Public function TtsObject.setTransformSmooth
---
--- Wraps setPositionSmooth and setRotationSmooth,
--- allowing any combination to be performed at once.
-
-function TtsObject.setTransformSmooth(obj, args)
-   args = args or EMPTY_TABLE
-
-   local result = true
-   if args.position then result = obj.setPositionSmooth( args.position, args.collide, args.fast ) and result end
-   if args.rotation then result = obj.setRotationSmooth( args.rotation, args.collide, args.fast ) and result end
-   return result
-end
-
-
--- ----------------------------------------
--- Public function TtsObject.moveToZoneTop
---
--- Moves an object so it sits above the center point of a zone.
--- Uses instant movement.
---
--- Options:
---   protrusion: How much of the object is above the container as a factor.
---   offset:     This modifies the drop position.
-
-function TtsObject.moveToZoneTop(obj, zone, opts)
-   local result = true
-
-   local rot = zone.getRotation()
-   result = obj.setRotation(rot) and result
-
-   local pos = TtsObject.get_drop_pos(obj, zone, opts)
-   result = obj.setPosition(pos) and result
-
-   return result
-end
-
-
--- ----------------------------------------
--- Public function TtsObject.moveToZoneTopSmooth
---
--- Moves an object so it sits above the center point of a zone.
--- Uses smooth movement.
---
--- Options:
---   protrusion: How much of the object is above the container as a factor.
---   offset:     This modifies the drop position.
-
-function TtsObject.moveToZoneTopSmooth(obj, zone, opts)
-   local old_rot = obj.getRotation()
-   local new_rot = zone.getRotation()
-
-   local result = true
-
-   result = obj.setRotation(new_rot) or result
-   local pos = TtsObject.get_drop_pos(obj, zone, opts)
-   result = obj.setRotation(old_rot) or result
-
-   result = obj.setPositionSmooth(pos) and result
-   result = obj.setRotationSmooth(rot) and result
-
-   return result
-end
-
-
--- ----------------------------------------
 -- Public function TtsObject.getBounds
 --
 -- The results are based on the object's current orientation.
@@ -318,6 +235,99 @@ function TtsObject.get_drop_pos(obj, container, opts)
 
    return pos
 end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.setTransform
+--
+-- Wraps setPosition, setRotation and setScale,
+-- allowing any combination to be performed at once.
+
+function TtsObject.setTransform(obj, args)
+   args = args or EMPTY_TABLE
+
+   local result = true
+   if args.position then result = obj.setPosition( args.position ) and result end
+   if args.rotation then result = obj.setRotation( args.rotation ) and result end
+   if args.scale    then result = obj.setScale(    args.scale    ) and result end
+   return result
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.setTransformSmooth
+--
+-- Wraps setPositionSmooth and setRotationSmooth,
+-- allowing any combination to be performed at once.
+
+function TtsObject.setTransformSmooth(obj, args)
+   args = args or EMPTY_TABLE
+
+   local result = true
+   if args.position then result = obj.setPositionSmooth( args.position, args.collide, args.fast ) and result end
+   if args.rotation then result = obj.setRotationSmooth( args.rotation, args.collide, args.fast ) and result end
+   return result
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.moveAtop
+--
+-- Moves an object so it sits atop another object.
+-- Uses instant movement.
+--
+-- Options:
+--   protrusion: What portion of the object being moved should be atop the other.
+--   offset:     This modifies the destination position.
+
+function TtsObject.moveAtop(obj, zone, opts)
+   local result = true
+
+   local rot = zone.getRotation()
+   result = obj.setRotation(rot) and result
+
+   local pos = TtsObject.get_drop_pos(obj, zone, opts)
+   result = obj.setPosition(pos) and result
+
+   return result
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.moveAtopSmooth
+--
+-- Moves an object so it sits above the center point of a zone.
+-- Uses smooth movement.
+--
+-- Options:
+--   protrusion: What portion of the object being moved should be atop the other.
+--   offset:     This modifies the destination position.
+
+function TtsObject.moveToZoneTopSmooth(obj, zone, opts)
+   local old_rot = obj.getRotation()
+   local new_rot = zone.getRotation()
+
+   local result = true
+
+   result = obj.setRotation(new_rot) or result
+   local pos = TtsObject.get_drop_pos(obj, zone, opts)
+   result = obj.setRotation(old_rot) or result
+
+   result = obj.setPositionSmooth(pos) and result
+   result = obj.setRotationSmooth(rot) and result
+
+   return result
+end
+
+
+-- ----------------------------------------
+-- Public function TtsObject.moveToZoneTop
+-- Public function TtsObject.moveToZoneTopSmooth
+--
+-- WARNING: DEPRECATED/OBSLETE.
+
+TtsObject.moveToZoneTop       = TtsObject.moveAtop
+TtsObject.moveToZoneTopSmooth = TtsObject.moveAtopSmooth
 
 
 -- ----------------------------------------
