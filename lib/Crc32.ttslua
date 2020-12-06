@@ -1,10 +1,6 @@
 -- ================================================================================
--- Character encoding/decoding utils
+-- Calculate the CRC32 of a sequence of bytes.
 -- ================================================================================
-
--- Modules.
-local Iters      = require("kintastic/lib/Iters")
-local TableUtils = require("kintastic/lib/TableUtils")
 
 -- Forward declarations for privates found at the bottom.
 local precomputed
@@ -18,6 +14,9 @@ local Crc32 = { }
 
 -- ----------------------------------------
 -- Public function Crc32.calc_crc32
+--
+-- Usage:
+--    local crc32 = Crc32.calc_crc32(string.unicode(s, 1, -1))
 
 function Crc32.calc_crc32(bytes)
    local crc32 = 0xFFFFFFFF
