@@ -50,6 +50,31 @@ local IS_ZONE_LOOKUP               = make_set(ZONES)
 -- Public interface
 
 -- ----------------------------------------
+-- Public function TtsObject.getQuantity
+--
+-- `obj.getQuantity()` doesn't return the correct amount for
+-- containers that were reduced to one object since the last frame.
+--
+-- Returns `-1` for infinite containers. At this time,
+-- this is the case even if the infinite container contains
+-- nothing. This may return `0` in the future.
+--
+-- Returns `nil` for non-containers.
+
+function TtsObject.getQuantity(obj)
+   local obj_type = obj.name
+   if IS_INFINITE_CONTAINER_LOOKUP[obj_type] then
+      return -1
+   elseif IS_FINITE_CONTAINER_LOOKUP[obj_type] then
+      local quantity = obj.getQuantity()
+      return quantity > 0 and quantity or ( obj.remainder and 1 or 0 )
+   else
+      return nil
+   end
+end
+
+
+-- ----------------------------------------
 -- Public function TtsObject.getBounds
 --
 -- The results are based on the object's current orientation.

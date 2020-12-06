@@ -47,20 +47,20 @@ setmetatable(TtsObject, {
 -- Public function TtsObject.moveToZoneTop         WARNING: DEPRECATED/OBSLETE.
 -- Public function TtsObject.moveToZoneTopSmooth   WARNING: DEPRECATED/OBSLETE.
 
-TtsObject.setTransform        = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.setTransform,        obj, ... )
-TtsObject.setTransformSmooth  = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.setTransformSmooth,  obj, ... )
-TtsObject.setPosition         = |obj, ...|wrap_instant_transform( obj, obj.setPosition,                        ... )
-TtsObject.setPositionSmooth   = |obj, ...|wrap_smooth_transform(  obj, obj.setPositionSmooth,                  ... )
-TtsObject.translate           = |obj, ...|wrap_smooth_transform(  obj, obj.translate,                          ... )
-TtsObject.setRotation         = |obj, ...|wrap_instant_transform( obj, obj.setRotation,                        ... )
-TtsObject.setRotationSmooth   = |obj, ...|wrap_smooth_transform(  obj, obj.setRotationSmooth,                  ... )
-TtsObject.rotate              = |obj, ...|wrap_smooth_transform(  obj, obj.rotate,                             ... )
-TtsObject.setScale            = |obj, ...|wrap_instant_transform( obj, obj.setScale,                           ... )
-TtsObject.scale               = |obj, ...|wrap_instant_transform( obj, obj.scale,                              ... )
-TtsObject.moveAtop            = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.moveAtop,            obj, ... )
-TtsObject.moveAtopSmooth      = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.moveAtopSmooth,      obj, ... )
-TtsObject.moveToZoneTop       = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.moveAtop,            obj, ... )
-TtsObject.moveToZoneTopSmooth = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.moveAtopSmooth,      obj, ... )
+TtsObject.setTransform        = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.setTransform,       obj, ... )
+TtsObject.setTransformSmooth  = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.setTransformSmooth, obj, ... )
+TtsObject.setPosition         = |obj, ...|wrap_instant_transform( obj, obj.setPosition,                       ... )
+TtsObject.setPositionSmooth   = |obj, ...|wrap_smooth_transform(  obj, obj.setPositionSmooth,                 ... )
+TtsObject.translate           = |obj, ...|wrap_smooth_transform(  obj, obj.translate,                         ... )
+TtsObject.setRotation         = |obj, ...|wrap_instant_transform( obj, obj.setRotation,                       ... )
+TtsObject.setRotationSmooth   = |obj, ...|wrap_smooth_transform(  obj, obj.setRotationSmooth,                 ... )
+TtsObject.rotate              = |obj, ...|wrap_smooth_transform(  obj, obj.rotate,                            ... )
+TtsObject.setScale            = |obj, ...|wrap_instant_transform( obj, obj.setScale,                          ... )
+TtsObject.scale               = |obj, ...|wrap_instant_transform( obj, obj.scale,                             ... )
+TtsObject.moveAtop            = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.moveAtop,           obj, ... )
+TtsObject.moveAtopSmooth      = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.moveAtopSmooth,     obj, ... )
+TtsObject.moveToZoneTop       = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.moveAtop,           obj, ... )
+TtsObject.moveToZoneTopSmooth = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.moveAtopSmooth,     obj, ... )
 
 
 -- ----------------------------------------
@@ -96,7 +96,7 @@ function TtsObject.takeObject(obj, args)
 
          -- Empty containers result in an error rather than a return of nil.
          -- Let's try to provide a better result.
-         if TtsObject.is_finite_container(obj) and obj.getQuantity() == 0 and not obj.remainder then
+         if TtsObject.is_container(obj) and TtsObject.getQuantity(obj) == 0 then
             reject(Errors.EEMPTY)
             return
          end
