@@ -1,0 +1,147 @@
+-- ================================================================================
+-- Base64 encoding/decoding utils
+-- ================================================================================
+
+-- Modules.
+local Iters      = require("kintastic/lib/Iters")
+local TableUtils = require("kintastic/lib/TableUtils")
+
+-- The module.
+local Base64 = { }
+
+
+-- ================================================================================
+-- Privates
+
+local syms = {
+   "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
+   "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f",
+   "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
+   "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "/",
+}
+
+local XX = "255"
+
+local DECODE = {
+   XX, XX, XX, XX,  XX, XX, XX, XX,  XX, XX, XX, XX,  XX, XX, XX, XX,
+   XX, XX, XX, XX,  XX, XX, XX, XX,  XX, XX, XX, XX,  XX, XX, XX, XX,
+   XX, XX, XX, XX,  XX, XX, XX, XX,  XX, XX, XX, 62,  63, 62, XX, 63,   --  !"# $%&' ()*+ ,-./
+   52, 53, 54, 55,  56, 57, 58, 59,  60, 61, XX, XX,  XX, XX, XX, XX,   -- 0123 4567 89:; <=>?
+   XX,  0,  1,  2,   3,  4,  5,  6,   7,  8,  9, 10,  11, 12, 13, 14,   -- @ABC DEFG HIJK LMNO
+   15, 16, 17, 18,  19, 20, 21, 22,  23, 24, 25, XX,  XX, XX, XX, 63,   -- PQRS TUVW XYZ[ \]^_
+   XX, 26, 27, 28,  29, 30, 31, 32,  33, 34, 35, 36,  37, 38, 39, 40,   -- `abc defg hijk lmno
+   41, 42, 43, 44,  45, 46, 47, 48,  49, 50, 51, XX,  XX, XX, XX, XX,   -- pqrs tuvw xyz{ |}~
+}
+
+local EOL = "\r\n"
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function Base64.encode
+
+function Base64.encode(bytes, sym62, sym63, pad, line_len)   -- Bytes as a string.
+   sym[63]  = sym62    or "+"
+   sym[64]  = sym63    or "/"
+   pad      = pad      or nil   -- A true or false value.
+   line_len = line_len or nil   -- An integer divisible by 4.
+
+   local next_break
+   if line_len then
+      line_len = line_len / 4 * 3  -- Convert to be in terms of input bytes.
+      next_break = line_len + 1
+   end
+
+   local encoded = ""
+   for i = 1, #bytes, 3 do
+      if next_break and i == next_break then
+         encoded = encoded .. EOL
+         next_break = next_break + line_len
+      end
+
+      local b1, b2, b3 = string.unicode(bytes, i+0, i+2)
+      if b3 then
+         encoded = encoded
+            .. string.char(
+               syms[                        b1 / 0x04 + 1 ],
+               syms[ ( b1 % 0x04 ) * 0x10 + b2 / 0x10 + 1 ],
+               syms[ ( b2 % 0x10 ) * 0x04 + b3 / 0x40 + 1 ],
+               syms[ ( b3 % 0x40 )                    + 1 ]
+            )
+      elseif b2 then
+         encoded = encoded
+            .. string.char(
+               syms[                        b1 / 0x04 + 1 ],
+               syms[ ( b1 % 0x04 ) * 0x10 + b2 / 0x10 + 1 ],
+               syms[ ( b2 % 0x10 ) * 0x04             + 1 ]
+            )
+            .. ( pad and "=" or "" )
+      else
+         encoded = encoded
+            .. string.char(
+               syms[                        b1 / 0x04 + 1 ],
+               syms[ ( b1 % 0x04 ) * 0x10             + 1 ]
+            )
+            .. ( pad and "==" or "" )
+      end
+   end
+
+   if line_len then
+      return encoded .. EOL
+   else
+      return encoded
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function Base64.decode
+
+function Base64.decode(s)
+   local decoded = ""
+
+   local pad_pos = string.find(s, "=", 1, true)
+   if pad_pos then
+      s = string.sub(s, 1, pad_pos-1)
+   end
+
+   s = string.gsub(s, "[^a-zA-Z0-9+,%-/_]", "")
+
+   for i = 1, #s, 4 do
+      local c1, c2, c3, c4 = string.unicode(s, i+0, i+3)
+      if c4 then
+         c1 = DECODE[c1+1]
+         c2 = DECODE[c2+1]
+         c3 = DECODE[c3+1]
+         c4 = DECODE[c4+1]
+         decoded = decoded .. string.char(
+            ( c1        ) * 0x04 + c2 / 0x10,
+            ( c2 % 0x10 ) * 0x10 + c3 / 0x04,
+            ( c3 % 0x04 ) * 0x40 + c4
+         )
+      elseif c3 then
+         c1 = DECODE[c1+1]
+         c2 = DECODE[c2+1]
+         c3 = DECODE[c3+1]
+         decoded = decoded .. string.char(
+            ( c1        ) * 0x04 + c2 / 0x10,
+            ( c2 % 0x10 ) * 0x10 + c3 / 0x04
+         )
+      elseif c2 then
+         c1 = DECODE[c1+1]
+         c2 = DECODE[c2+1]
+         decoded = decoded .. string.char(
+            ( c1        ) * 0x04 + c2 / 0x10
+         )
+      end
+   end
+
+   return decoded
+end
+
+
+-- ================================================================================
+
+return Base64
