@@ -58,15 +58,13 @@ TableLock.limited_functionality = buggy              -- Read-only.
 --
 -- Access to the list of provided names will no
 -- longer be forbidden for the provided table.
+--
+-- This even works on tables that were never locked.
 
 function TableLock.declare(tbl, ...)
    local mt = getmetatable(tbl)
    local self = mt and mt[hook]
    if not self then
-      if TableLock.on_violation("Table needs to have been locked at some point.") then
-         add_state(tbl)
-      end
-
       return
    end
 
@@ -80,6 +78,8 @@ end
 
 -- ----------------------------------------
 -- Public function TableLock.declare_and_set
+--
+-- This even works on tables that were never locked.
 
 function TableLock.declare_and_set(tbl, k, v)
    TableLock.declare(tbl, k)
@@ -89,21 +89,21 @@ end
 
 -- ----------------------------------------
 -- Public function TableLock.merge
+--
+-- This even works on tables that were never locked.
 
 function TableLock.merge(dst, src)
    local mt = getmetatable(dst)
    local self = mt and mt[hook]
-   if not self then
-      if TableLock.on_violation("Table needs to have been locked at some point.") then
-         add_state(tbl)
+   if self then
+      for k, v in pairs(src) do
+         self.declared[k] = true
+         dst[k] = v
       end
-
-      return
-   end
-
-   for k, v in pairs(src) do
-      self.declared[k] = true
-      dst[k] = v
+   else
+      for k, v in pairs(src) do
+         dst[k] = v
+      end
    end
 end
 
