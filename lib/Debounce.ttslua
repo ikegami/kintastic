@@ -1,0 +1,118 @@
+-- ================================================================================
+-- Tools to avoid accidental double-clicks.
+-- ================================================================================
+
+-- Modules.
+local TableLock = require("kintastic/lib/TableLock")
+
+-- Imports.
+local declare_and_set = TableLock.declare_and_set
+
+-- The module.
+local Debounce = { }
+
+
+-- ================================================================================
+-- Privates
+
+-- ----------------------------------------
+-- Private constants
+
+local EMPTY_TABLE = { }
+
+
+-- ----------------------------------------
+-- Private function on_click_dummy
+
+local function on_click_dummy()
+end
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function Debounce.debounce
+--
+-- Takes three parameters:
+-- - name:        The base name of the button click handler to create.
+-- - setter:       A function that updates the Lua or XML buttons.
+-- - handler:      When the button is clicked, this function will be
+--                 called with the same arguments as provided as the
+--                 button click handler would normally receive plus
+--                 one leading argument. This leading argument must
+--                 be called as a function on a successful click.
+-- - opts:         Optional table of options:
+--   - cool_down:  A period of time in which for which the button
+--                 will be ignored after it has been clicked.
+--
+-- Usage:
+--    Debounce.debounce(
+--       "on_click_advance_game",
+--       function(name)
+--          UI.setAttribute("advance_game_button", "onClick", name)
+--       end,
+--       function(button_used, player, mouse_button, button_id)
+--          -- Check permissions, if it's ok to press button now, etc
+--          if ... then
+--             return
+--          end
+--
+--          button_used()
+--          advance_game()
+--       end
+--    )
+
+function Debounce.debounce(name, setter, handler, opts)
+   opts = opts or EMPTY_TABLE
+
+   local counter = 0
+
+   local function install_or_update()
+      local clicked = false
+      local enabled = true
+
+      local function used_button(_opts)
+         if _opts then
+            opts = _opts
+         end
+
+         clicked = true
+         install_or_update()
+      end
+
+      local function wrapped_handler(...)
+         if clicked or not enabled then
+            return
+         end
+
+         return handler(used_button, ...)
+      end
+
+      if opts.cool_down and counter > 0 then
+         enabled = false
+         Wait.time(
+            function()
+               enabled = true
+            end,
+            opts.cool_down
+         )
+      end
+
+      local old_handler_name = "on_click_advance_game_" .. counter
+      counter = counter + 1
+      local new_handler_name = "on_click_advance_game_" .. counter
+
+      declare_and_set(_G, new_handler_name, wrapped_handler)
+      setter(new_handler_name)
+
+      _G[old_handler_name] = on_click_dummy
+   end
+
+   install_or_update()
+end
+
+
+-- ================================================================================
+
+return Debounce
