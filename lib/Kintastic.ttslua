@@ -5,6 +5,7 @@
 return {
    [ "kintastic/lib/ArrayUtils"           ] = require("kintastic/lib/ArrayUtils"),
    [ "kintastic/lib/Base64"               ] = require("kintastic/lib/Base64"),
+   [ "kintastic/lib/ColorUtils"           ] = require("kintastic/lib/ColorUtils"),
    [ "kintastic/lib/Crc32"                ] = require("kintastic/lib/Crc32"),
    [ "kintastic/lib/DictUtils"            ] = require("kintastic/lib/DictUtils"),
    [ "kintastic/lib/Encode"               ] = require("kintastic/lib/Encode"),

@@ -1,0 +1,86 @@
+-- ================================================================================
+-- Color utils.
+-- ================================================================================
+
+-- The module.
+local ColorUtils = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function ColorUtils.color_from_hsl
+
+function ColorUtils.color_from_hsl(hsl)
+   local h = hsl[1] or hsl.h
+   local s = hsl[2] or hsl.s or 100
+   local l = hsl[3] or hsl.l or 50
+
+   if type(h) ~= "number" or h < 0 or h >= 360
+   or type(s) ~= "number" or s < 0 or s > 100
+   or type(l) ~= "number" or l < 0 or l > 100 then
+      error("Invalid input.")
+   end
+
+   s = s / 100
+   l = l / 100
+
+   local C = ( 1 - math.abs( 2 * l - 1 ) ) * s
+   local hh = h / 60
+   local X = C * ( 1 - math.abs( hh % 2 - 1 ) )
+
+   hh = math.floor(hh)
+   local r, g, b = 0, 0, 0
+   if     hh == 0 then r = C; g = X
+   elseif hh == 1 then r = X; g = C
+   elseif hh == 2 then g = C; b = X
+   elseif hh == 3 then g = X; b = C
+   elseif hh == 4 then r = X; b = C
+   else                r = C; b = X
+   end
+
+   local m = l - C / 2
+   r = r + m
+   g = g + m
+   b = b + m
+
+   return Color(r, g, b)
+end
+
+
+-- ----------------------------------------
+-- Public function ColorUtils.color_to_hsl
+
+function ColorUtils.color_to_hsl(color)
+   color = Color(color)
+
+   local M = math.max(r, g, b)
+   local m = math.min(r, g, b)
+   local d = M - m
+
+   local h
+   if     d == 0 then h = 0
+   elseif M == r then h = ( ( g - b ) / d ) % 6
+   elseif M == g then h = ( b - r ) / d + 2
+   else               h = ( r - g ) / d + 4
+   end
+
+   h = h * 60
+   if h < 0 then
+      h = h + 360
+   end
+
+   local l = ( M + m ) / 2
+   local s = d == 0 and 0 or d / ( 1 - math.abs( 2 * l - 1 ) )
+
+   s = s * 100
+   l = l * 100
+
+   return { h, s, l, h=h, s=s, l=l }
+end
+
+
+-- ================================================================================
+
+return ColorUtils
