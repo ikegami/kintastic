@@ -1,0 +1,16 @@
+local ColorUtils = require("kintastic/lib/ColorUtils")
+
+local tests = { }
+
+for i, hex in ipairs({
+   "112233",
+   "aabbccdd",
+}) do
+   local hex = hex
+   table.insert(tests, {
+      "color<->hex " .. hex,
+      ||ColorUtils.color_to_hex(ColorUtils.color_from_hex(hex)) == hex
+   })
+end
+
+return tests

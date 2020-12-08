@@ -1,0 +1,82 @@
+-- ================================================================================
+-- Test suite.
+-- ================================================================================
+
+-- The module.
+local Test = { }
+
+
+-- ================================================================================
+-- Privates
+
+-- ----------------------------------------
+-- Private constants
+
+local test_modules = {
+   ColorUtils = require("kintastic/tests/ColorUtils"),
+}
+
+
+-- ----------------------------------------
+-- Private function info_msg
+-- Private function error_msg
+
+local function info_msg(msg)  printToAll(msg, Color.White) end
+local function error_msg(msg) printToAll(msg, Color.Red)   end
+
+
+-- ----------------------------------------
+-- Private function run_test
+
+local function run_test(state, name, f, ...)
+   local success, rv = pcall(f, state, ...)
+   if not success then
+      error_msg(name .. ": failed (Exception)")
+      error_msg(rv)
+   elseif not rv then
+      printToAll(name .. ": failed", Color.Red)
+   else
+      info_msg(name .. ": ok")
+   end
+end
+
+
+-- ----------------------------------------
+-- Private function run_test_module
+
+local function run_test_module(name, test_module)
+   if not test_module then
+      error_msg("No test module named \"" .. name "\"")
+      return
+   end
+
+   info_msg("[[" .. name .. "]]")
+   local state = { }
+   for i, test in ipairs(test_module) do
+      run_test(state, table.unpack(test))
+   end
+end
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function Test.run_tests
+
+function Test.run_tests(selected_tests)
+   if selected_tests then
+      for i, name in ipairs(selected_tests) do
+         run_test_module(name, test_modules[name])
+      end
+   else
+      for name, test_module in pairs(test_modules) do
+         run_test_module(name, test_module)
+      end
+   end
+end
+
+
+-- ================================================================================
+
+return Test
