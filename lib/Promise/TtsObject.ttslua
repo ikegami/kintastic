@@ -88,7 +88,7 @@ function TtsObject.takeObject(obj, args)
          if args.callback_function then
             local orig_cb = args.callback_function
             args.callback_function = function(spawned_obj)
-               resolve(orib_cb(spawned_obj))
+               resolve(orig_cb(spawned_obj))
             end
          else
             args.callback_function = resolve
