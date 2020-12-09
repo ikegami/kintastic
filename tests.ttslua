@@ -30,10 +30,10 @@ end
 -- Private function info_msg
 -- Private function error_msg
 
-local function strong_msg(msg)  printToAll(msg, Color.Blue)  end
-local function good_msg(msg)    printToAll(msg, Color.Green) end
-local function info_msg(msg)    printToAll(msg, Color.White) end
-local function error_msg(msg)   printToAll(msg, Color.Red)   end
+local function strong_msg(msg) printToAll(msg, Color.Blue)  end
+local function good_msg(msg)   printToAll(msg, Color.Green) end
+local function info_msg(msg)   printToAll(msg, Color.White) end
+local function error_msg(msg)  printToAll(msg, Color.Red)   end
 
 
 -- ----------------------------------------
@@ -59,7 +59,7 @@ end
 -- Private function run_test_module
 
 local function run_test_module(name, test_module)
-   strong_msg("[[ " .. name .. " ]]")
+   strong_msg("== " .. name .. " ==")
 
    if not test_module then
       error_msg("No test module named \"" .. name .. "\"")
@@ -91,14 +91,14 @@ function Test.run_tests(selected_tests)
    local num_passed = 0
 
    if selected_tests then
-      strong_msg("[[[[[[ Running test suite (selected modules) ]]]]]]")
+      strong_msg("[[ Running test suite (selected modules) ]]")
       for i, name in ipairs(selected_tests) do
          local _num_tests, _num_passed = run_test_module(name, test_modules_by_name[name])
          num_tests  = num_tests  + _num_tests
          num_passed = num_passed + _num_passed
       end
    else
-      strong_msg("[[[[[[ Running test suite (complete) ]]]]]]")
+      strong_msg("[[ Running test suite (complete) ]]")
       for i, _ in ipairs(test_modules) do
          local _num_tests, _num_passed = run_test_module(table.unpack(_))
          num_tests  = num_tests  + _num_tests
@@ -106,8 +106,8 @@ function Test.run_tests(selected_tests)
       end
    end
 
-   strong_msg("[[[[[[ Summary ]]]]]]")
-   info_msg(num_tests .. " tests")
+   strong_msg("[[ Summary ]]")
+   info_msg(num_tests .. " tests were executed.")
    if num_passed == num_tests then
       good_msg("All tests passed.")
    else
