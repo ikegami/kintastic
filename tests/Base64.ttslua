@@ -1,0 +1,83 @@
+local Base64 = require("kintastic/lib/Base64")
+
+local tests = { }
+
+for i, test in ipairs({
+   { "any carnal pleasure.", "YW55IGNhcm5hbCBwbGVhc3VyZS4" },
+   { "any carnal pleasure",  "YW55IGNhcm5hbCBwbGVhc3VyZQ" },
+   { "any carnal pleasur",   "YW55IGNhcm5hbCBwbGVhc3Vy" },
+   { "any carnal pleasu.",   "YW55IGNhcm5hbCBwbGVhc3U" },
+   { "any carnal pleas",     "YW55IGNhcm5hbCBwbGVhcw" },
+   { "pleasure.",            "cGxlYXN1cmUu" },
+   { "leasure.",             "bGVhc3VyZS4" },
+   { "easure.",              "ZWFzdXJlLg" },
+   { "asure.",               "YXN1cmUu" },
+   { "sure.",                "c3VyZS4" },
+}) do
+   local text, coded = unpack(test)
+   table.insert(tests, {
+      "encode no pad \"" .. text .. "\"",
+      ||Base64.encode(text) == coded
+   })
+   table.insert(tests, {
+      "decode no pad " .. coded,
+      ||Base64.decode(coded) == text
+   })
+end
+
+for i, test in ipairs({
+   { "any carnal pleasure.", "YW55IGNhcm5hbCBwbGVhc3VyZS4=" },
+   { "any carnal pleasure",  "YW55IGNhcm5hbCBwbGVhc3VyZQ==" },
+   { "any carnal pleasur",   "YW55IGNhcm5hbCBwbGVhc3Vy" },
+   { "any carnal pleasu.",   "YW55IGNhcm5hbCBwbGVhc3U=" },
+   { "any carnal pleas",     "YW55IGNhcm5hbCBwbGVhcw==" },
+   { "pleasure.",            "cGxlYXN1cmUu" },
+   { "leasure.",             "bGVhc3VyZS4=" },
+   { "easure.",              "ZWFzdXJlLg==" },
+   { "asure.",               "YXN1cmUu" },
+   { "sure.",                "c3VyZS4=" },
+}) do
+   local text, coded = unpack(test)
+   table.insert(tests, {
+      "encode padded \"" .. text .. "\"",
+      ||Base64.encode(text, nil, nil, true) == coded
+   })
+   table.insert(tests, {
+      "decode padded " .. coded,
+      ||Base64.decode(coded) == text
+   })
+end
+
+for i, test in ipairs({
+   { "sym62 +",       "+",   false, string.char(0xF8), "+A" },
+   { "sym62 -",       "-",   false, string.char(0xF8), "-A" },
+   { "sym62 default", false, false, string.char(0xF8), "+A" },
+   { "sym63 /",       false, "/",   string.char(0xFC), "/A" },
+   { "sym63 _",       false, "_",   string.char(0xFC), "_A" },
+   { "sym63 ,",       false, ",",   string.char(0xFC), ",A" },
+   { "sym63 default", false, false, string.char(0xFC), "/A" },
+}) do
+   local name, sym62, sym63, text, coded = unpack(test)
+   table.insert(tests, {
+      "encode " .. name,
+      ||Base64.encode(text, sym62  or nil, sym63 or nil) == coded
+   })
+   table.insert(tests, {
+      "decode " .. name,
+      ||Base64.decode(coded) == text
+   })
+end
+
+do
+   local text, coded = "abcdefghijkl", "YWJjZGVm\r\nZ2hpamts\r\n"
+   table.insert(tests, {
+      "encode line break",
+      ||Base64.encode(text, nil, nil, nil, 8) == coded
+   })
+   table.insert(tests, {
+      "decode line break",
+      ||Base64.decode(coded) == text
+   })
+end
+
+return tests

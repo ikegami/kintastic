@@ -13,8 +13,15 @@ local Test = { }
 -- Private constants
 
 local test_modules = {
-   ColorUtils = require("kintastic/tests/ColorUtils"),
+   { "Base64",     require("kintastic/tests/Base64") },
+   { "ColorUtils", require("kintastic/tests/ColorUtils") },
 }
+
+local test_modules_by_name = { }
+for i, _ in ipairs(test_modules) do
+   local name, test_module = table.unpack(_)
+   test_modules_by_name[name] = test_module
+end
 
 
 -- ----------------------------------------
@@ -67,11 +74,11 @@ end
 function Test.run_tests(selected_tests)
    if selected_tests then
       for i, name in ipairs(selected_tests) do
-         run_test_module(name, test_modules[name])
+         run_test_module(name, test_modules_by_name[name])
       end
    else
-      for name, test_module in pairs(test_modules) do
-         run_test_module(name, test_module)
+      for i, _ in ipairs(test_modules) do
+         run_test_module(table.unpack(_))
       end
    end
 end
