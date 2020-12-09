@@ -14,14 +14,14 @@ for i, test in ipairs({
    { "asure.",               "YXN1cmUu" },
    { "sure.",                "c3VyZS4" },
 }) do
-   local text, coded = unpack(test)
+   local bytes, coded = unpack(test)
    table.insert(tests, {
-      "encode no pad \"" .. text .. "\"",
-      ||Base64.encode(text) == coded
+      "encode no pad \"" .. bytes .. "\"",
+      ||Base64.encode(bytes) == coded
    })
    table.insert(tests, {
       "decode no pad " .. coded,
-      ||Base64.decode(coded) == text
+      ||Base64.decode(coded) == bytes
    })
 end
 
@@ -37,14 +37,14 @@ for i, test in ipairs({
    { "asure.",               "YXN1cmUu" },
    { "sure.",                "c3VyZS4=" },
 }) do
-   local text, coded = unpack(test)
+   local bytes, coded = unpack(test)
    table.insert(tests, {
-      "encode padded \"" .. text .. "\"",
-      ||Base64.encode(text, nil, nil, true) == coded
+      "encode padded \"" .. bytes .. "\"",
+      ||Base64.encode(bytes, nil, nil, true) == coded
    })
    table.insert(tests, {
       "decode padded " .. coded,
-      ||Base64.decode(coded) == text
+      ||Base64.decode(coded) == bytes
    })
 end
 
@@ -57,26 +57,26 @@ for i, test in ipairs({
    { "sym63 ,",       false, ",",   string.char(0xFC), ",A" },
    { "sym63 default", false, false, string.char(0xFC), "/A" },
 }) do
-   local name, sym62, sym63, text, coded = unpack(test)
+   local name, sym62, sym63, bytes, coded = unpack(test)
    table.insert(tests, {
       "encode " .. name,
-      ||Base64.encode(text, sym62  or nil, sym63 or nil) == coded
+      ||Base64.encode(bytes, sym62  or nil, sym63 or nil) == coded
    })
    table.insert(tests, {
       "decode " .. name,
-      ||Base64.decode(coded) == text
+      ||Base64.decode(coded) == bytes
    })
 end
 
 do
-   local text, coded = "abcdefghijkl", "YWJjZGVm\r\nZ2hpamts\r\n"
+   local bytes, coded = "abcdefghijkl", "YWJjZGVm\r\nZ2hpamts\r\n"
    table.insert(tests, {
       "encode line break",
-      ||Base64.encode(text, nil, nil, nil, 8) == coded
+      ||Base64.encode(bytes, nil, nil, nil, 8) == coded
    })
    table.insert(tests, {
       "decode line break",
-      ||Base64.decode(coded) == text
+      ||Base64.decode(coded) == bytes
    })
 end
 
