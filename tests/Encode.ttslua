@@ -1,0 +1,21 @@
+local Encode = require("kintastic/lib/Encode")
+
+local tests = { }
+
+for i, test in ipairs({
+   { "ASCII",       "abcde", string.char(0x61, 0x62, 0x63, 0x64, 0x65) },
+   { "latin-1",     "abcdé", string.char(0x61, 0x62, 0x63, 0x64, 0xC3, 0xA9) },
+   { "2-byte seq",  "abcdē", string.char(0x61, 0x62, 0x63, 0x64, 0xC4, 0x93) },
+   { "3-byte seq",  "abcdⱸ", string.char(0x61, 0x62, 0x63, 0x64, 0xE2, 0xB1, 0xB8) },
+   { "4-byte seq",  "abcd𐀁", string.char(0x61, 0x62, 0x63, 0x64, 0xF0, 0x90, 0x80, 0x81) },  -- These require surrogate pairs in Lua
+   { "Hi surrogate with no lo", string.char(0x61, 0xDC00, 0x61), string.char(0x61, 0xEF, 0xBF, 0xBD, 0x61) },
+   { "Lo surrogate with no hi", string.char(0x61, 0xD800, 0x61), string.char(0x61, 0xEF, 0xBF, 0xBD, 0x61) },
+}) do
+   local name, text, coded = unpack(test)
+   table.insert(tests, {
+      "encode " .. name,
+      ||Encode.encode_utf8(text) == coded
+   })
+end
+
+return tests
