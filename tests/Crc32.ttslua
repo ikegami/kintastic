@@ -1,0 +1,16 @@
+local Crc32 = require("kintastic/lib/Crc32")
+
+local tests = { }
+
+for i, test in ipairs({
+   { "empty string", "",     0x00000000 },
+   { "short test",   "test", 0xD87F7E0C },
+}) do
+   local name, bytes, crc32 = unpack(test)
+   table.insert(tests, {
+      name,
+      ||Crc32.calc_crc32(bytes) == crc32
+   })
+end
+
+return tests

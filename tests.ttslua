@@ -15,6 +15,7 @@ local Test = { }
 local test_modules = {
    { "Base64",     require("kintastic/tests/Base64") },
    { "ColorUtils", require("kintastic/tests/ColorUtils") },
+   { "Crc32",      require("kintastic/tests/Crc32") },
    { "Encode",     require("kintastic/tests/Encode") },
 }
 
