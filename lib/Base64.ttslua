@@ -43,8 +43,8 @@ local EOL = "\r\n"
 -- Public function Base64.encode
 
 function Base64.encode(bytes, sym62, sym63, pad, line_len)   -- Bytes as a string.
-   sym[63]  = sym62    or "+"
-   sym[64]  = sym63    or "/"
+   syms[63] = sym62    or "+"
+   syms[64] = sym63    or "/"
    pad      = pad      or nil   -- A true or false value.
    line_len = line_len or nil   -- An integer divisible by 4.
 
@@ -64,26 +64,20 @@ function Base64.encode(bytes, sym62, sym63, pad, line_len)   -- Bytes as a strin
       local b1, b2, b3 = string.unicode(bytes, i+0, i+2)
       if b3 then
          encoded = encoded
-            .. string.char(
-               syms[                        b1 / 0x04 + 1 ],
-               syms[ ( b1 % 0x04 ) * 0x10 + b2 / 0x10 + 1 ],
-               syms[ ( b2 % 0x10 ) * 0x04 + b3 / 0x40 + 1 ],
-               syms[ ( b3 % 0x40 )                    + 1 ]
-            )
+            .. syms[                        math.floor( b1 / 0x04 ) + 1 ]
+            .. syms[ ( b1 % 0x04 ) * 0x10 + math.floor( b2 / 0x10 ) + 1 ]
+            .. syms[ ( b2 % 0x10 ) * 0x04 + math.floor( b3 / 0x40 ) + 1 ]
+            .. syms[ ( b3 % 0x40 )                                  + 1 ]
       elseif b2 then
          encoded = encoded
-            .. string.char(
-               syms[                        b1 / 0x04 + 1 ],
-               syms[ ( b1 % 0x04 ) * 0x10 + b2 / 0x10 + 1 ],
-               syms[ ( b2 % 0x10 ) * 0x04             + 1 ]
-            )
+            .. syms[                        math.floor( b1 / 0x04 ) + 1 ]
+            .. syms[ ( b1 % 0x04 ) * 0x10 + math.floor( b2 / 0x10 ) + 1 ]
+            .. syms[ ( b2 % 0x10 ) * 0x04                           + 1 ]
             .. ( pad and "=" or "" )
       else
          encoded = encoded
-            .. string.char(
-               syms[                        b1 / 0x04 + 1 ],
-               syms[ ( b1 % 0x04 ) * 0x10             + 1 ]
-            )
+            .. syms[                        math.floor( b1 / 0x04 ) + 1 ]
+            .. syms[ ( b1 % 0x04 ) * 0x10                           + 1 ]
             .. ( pad and "==" or "" )
       end
    end
@@ -117,23 +111,23 @@ function Base64.decode(s)
          c3 = DECODE[c3+1]
          c4 = DECODE[c4+1]
          decoded = decoded .. string.char(
-            ( c1        ) * 0x04 + c2 / 0x10,
-            ( c2 % 0x10 ) * 0x10 + c3 / 0x04,
-            ( c3 % 0x04 ) * 0x40 + c4
+            ( c1        ) * 0x04 + math.floor( c2 / 0x10 ),
+            ( c2 % 0x10 ) * 0x10 + math.floor( c3 / 0x04 ),
+            ( c3 % 0x04 ) * 0x40 +             c4
          )
       elseif c3 then
          c1 = DECODE[c1+1]
          c2 = DECODE[c2+1]
          c3 = DECODE[c3+1]
          decoded = decoded .. string.char(
-            ( c1        ) * 0x04 + c2 / 0x10,
-            ( c2 % 0x10 ) * 0x10 + c3 / 0x04
+            ( c1        ) * 0x04 + math.floor( c2 / 0x10 ),
+            ( c2 % 0x10 ) * 0x10 + math.floor( c3 / 0x04 )
          )
       elseif c2 then
          c1 = DECODE[c1+1]
          c2 = DECODE[c2+1]
          decoded = decoded .. string.char(
-            ( c1        ) * 0x04 + c2 / 0x10
+            ( c1        ) * 0x04 + math.floor( c2 / 0x10 )
          )
       end
    end
