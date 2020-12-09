@@ -37,6 +37,21 @@ function TableUtils.map(tbl, cb)
 end
 
 
+-- ----------------------------------------
+-- Public function TableUtils.count
+
+function TableUtils.count(tbl, cb)
+   local count = 0
+   for k, v in pairs(tbl) do
+      if cb(v) then
+         count = count + 1
+      end
+   end
+
+   return count
+end
+
+
 -- ================================================================================
 
 return TableUtils
