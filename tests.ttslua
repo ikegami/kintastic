@@ -30,8 +30,10 @@ end
 -- Private function info_msg
 -- Private function error_msg
 
-local function info_msg(msg)  printToAll(msg, Color.White) end
-local function error_msg(msg) printToAll(msg, Color.Red)   end
+local function strong_msg(msg)  printToAll(msg, Color.Blue)  end
+local function good_msg(msg)    printToAll(msg, Color.Green) end
+local function info_msg(msg)    printToAll(msg, Color.White) end
+local function error_msg(msg)   printToAll(msg, Color.Red)   end
 
 
 -- ----------------------------------------
@@ -42,10 +44,13 @@ local function run_test(state, name, f, ...)
    if not success then
       error_msg(name .. ": failed (Exception)")
       error_msg(rv)
+      return false
    elseif not rv then
       printToAll(name .. ": failed", Color.Red)
+      return false
    else
       info_msg(name .. ": ok")
+      return true
    end
 end
 
@@ -54,16 +59,24 @@ end
 -- Private function run_test_module
 
 local function run_test_module(name, test_module)
+   strong_msg("[[ " .. name .. " ]]")
+
    if not test_module then
-      error_msg("No test module named \"" .. name "\"")
-      return
+      error_msg("No test module named \"" .. name .. "\"")
+      return 1, 0
    end
 
-   info_msg("[[" .. name .. "]]")
+   local num_tests = #test_module
+   local num_passed = 0
+
    local state = { }
    for i, test in ipairs(test_module) do
-      run_test(state, table.unpack(test))
+      if run_test(state, table.unpack(test)) then
+         num_passed = num_passed + 1
+      end
    end
+
+   return num_tests, num_passed
 end
 
 
@@ -74,14 +87,32 @@ end
 -- Public function Test.run_tests
 
 function Test.run_tests(selected_tests)
+   local num_tests  = 0
+   local num_passed = 0
+
    if selected_tests then
+      strong_msg("[[[[[[ Running test suite (selected modules) ]]]]]]")
       for i, name in ipairs(selected_tests) do
-         run_test_module(name, test_modules_by_name[name])
+         local _num_tests, _num_passed = run_test_module(name, test_modules_by_name[name])
+         num_tests  = num_tests  + _num_tests
+         num_passed = num_passed + _num_passed
       end
    else
+      strong_msg("[[[[[[ Running test suite (complete) ]]]]]]")
       for i, _ in ipairs(test_modules) do
-         run_test_module(table.unpack(_))
+         local _num_tests, _num_passed = run_test_module(table.unpack(_))
+         num_tests  = num_tests  + _num_tests
+         num_passed = num_passed + _num_passed
       end
+   end
+
+   strong_msg("[[[[[[ Summary ]]]]]]")
+   info_msg(num_tests .. " tests")
+   if num_passed == num_tests then
+      good_msg("All tests passed.")
+   else
+      info_msg(num_passed .. " tests passed.")
+      error_msg( ( num_tests - num_passed ) .. " tests failed.")
    end
 end
 
