@@ -88,7 +88,7 @@ function Base64.encode(bytes, sym62, sym63, pad, line_len)   -- Bytes as a strin
       end
    end
 
-   if line_len then
+   if line_len and encoded ~= "" then
       return encoded .. EOL
    else
       return encoded
