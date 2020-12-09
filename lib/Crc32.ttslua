@@ -15,7 +15,7 @@ local Crc32 = { }
 -- ----------------------------------------
 -- Public function Crc32.calc_crc32
 
-function Crc32.calc_crc32(bytes)   -- As as string.
+function Crc32.calc_crc32(bytes)   -- As a string.
    local crc32 = 0xFFFFFFFF
 
    local n = #bytes
