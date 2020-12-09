@@ -67,23 +67,23 @@ function Encode.encode_utf8(s)
       elseif cp < 0x800 then
          -- 110xxxxx 10xxxxxx
          encoded = encoded .. string.char(
-            0xC0 + ( c / 0x40        ),
-            0x80 + ( c        % 0x40 )
+            0xC0 + ( cp / 0x40        ),
+            0x80 + ( cp        % 0x40 )
          )
       elseif cp < 0x10000 then
          -- 1110xxxx 10xxxxxx 10xxxxxx
          encoded = encoded .. string.char(
-            0xE0 + ( c / 0x1000        ),
-            0x80 + ( c /   0x40 % 0x40 ),
-            0x80 + ( c          % 0x40 )
+            0xE0 + ( cp / 0x1000        ),
+            0x80 + ( cp /   0x40 % 0x40 ),
+            0x80 + ( cp          % 0x40 )
          )
       elseif cp < 0x110000 then
          -- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
          encoded = encoded .. string.char(
-            0xF0 + ( c / 0x40000        ),
-            0x80 + ( c /  0x1000 % 0x40 ),
-            0x80 + ( c /    0x40 % 0x40 ),
-            0x80 + ( c           % 0x40 )
+            0xF0 + ( cp / 0x40000        ),
+            0x80 + ( cp /  0x1000 % 0x40 ),
+            0x80 + ( cp /    0x40 % 0x40 ),
+            0x80 + ( cp           % 0x40 )
          )
       end
    end
