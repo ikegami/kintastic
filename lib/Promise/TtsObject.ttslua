@@ -73,11 +73,15 @@ TtsObject.moveToZoneTopSmooth = |obj, ...|wrap_smooth_transform(  obj, BaseTtsOb
 -- Note that empty infinite bags results in an exception.
 -- The promise is rejected with reason Errors.ENOTCONTAINER if `obj.takeObject` returns `nil`.
 --
--- If a `callback_function` argument is provided, the returned promise will
--- adopt the value returned by the callback function.
+-- If an `immediate_callback` argument is provided, it will be called as soon
+-- as `spawnObjectJSON` returns, with the object as a parameter. It's return
+-- value is ignored.
 --
--- If a `return_obj` argument is provided and true, the spawned object will
--- be returned as a second value.
+-- If a `callback_function` argument is provided, it will be called once the
+-- object is spawned, and the promise returned by `TtsObject.takeObject`
+-- will adopt the value returned by the callback function.
+--
+-- WARNING: The `return_obj` argument is DEPERECATED/OBSOLETE.
 
 function TtsObject.takeObject(obj, args)
    local spawned_obj
@@ -107,6 +111,13 @@ function TtsObject.takeObject(obj, args)
          end
       end
    )
+
+   if args.immediate_callback then
+      local success, rv = pcall(args.immediate_callback, spawned_obj)
+      if not success then
+         TtsMsgUtils.broadcast_error(rv)
+      end
+   end
 
    if args.return_obj then
       return promise, spawned_obj

@@ -3,8 +3,9 @@
 -- ================================================================================
 
 -- Modules.
-local Promise    = require("kintastic/lib/Promise")
-local TableUtils = require("kintastic/lib/TableUtils")
+local Promise     = require("kintastic/lib/Promise")
+local TableUtils  = require("kintastic/lib/TableUtils")
+local TtsMsgUtils = require("kintastic/lib/TtsMsgUtils")
 
 -- Forward declarations for privates found at the bottom.
 local spawner
@@ -22,17 +23,17 @@ local TtsBase = { }
 -- This is a thin wrapper around `spawnObject` that returns a promise that
 -- becomes fulfilled with the spawned object once the object has been created.
 --
--- If a `callback_function` argument is provided, the returned promise will
--- adopt the value returned by the callback function.
+-- If an `immediate_callback` argument is provided, it will be called as soon
+-- as `spawnObject` returns, with the object as a parameter. It's return
+-- value is ignored.
 --
--- If a `return_obj` argument is provided and true, the spawned object will
--- be returned as a second value.
---
--- You may replace the global spawnObject with this function.
+-- If a `callback_function` argument is provided, it will be called once the
+-- object is spawned, and the promise returned by `TtsBase.spawnObject`
+-- will adopt the value returned by the callback function.
 
 local wrapped_spawn_object = spawnObject
 
-function TtsBase.spawnObjectJSON(args)
+function TtsBase.spawnObject(args)
    return spawner(wrapped_spawn_object, args)
 end
 
@@ -43,13 +44,15 @@ end
 -- This is a thin wrapper around `spawnObjectData` that returns a promise that
 -- becomes fulfilled with the spawned object once the object has been created.
 --
--- If a `callback_function` argument is provided, the returned promise will
--- adopt the value returned by the callback function.
+-- If an `immediate_callback` argument is provided, it will be called as soon
+-- as `spawnObjectData` returns, with the object as a parameter. It's return
+-- value is ignored.
 --
--- If a `return_obj` argument is provided and true, the spawned object will
--- be returned as a second value.
+-- If a `callback_function` argument is provided, it will be called once the
+-- object is spawned, and the promise returned by `TtsBase.spawnObjectData`
+-- will adopt the value returned by the callback function.
 --
--- You may replace the global spawnObjectData with this function.
+-- WARNING: The `return_obj` argument is DEPERECATED/OBSOLETE.
 
 local wrapped_spawn_object_data = spawnObjectData
 
@@ -64,13 +67,15 @@ end
 -- This is a thin wrapper around `spawnObjectJSON` that returns a promise that
 -- becomes fulfilled with the spawned object once the object has been created.
 --
--- If a `callback_function` argument is provided, the returned promise will
--- adopt the value returned by the callback function.
+-- If an `immediate_callback` argument is provided, it will be called as soon
+-- as `spawnObjectJSON` returns, with the object as a parameter. It's return
+-- value is ignored.
 --
--- If a `return_obj` argument is provided and true, the spawned object will
--- be returned as a second value.
+-- If a `callback_function` argument is provided, it will be called once the
+-- object is spawned, and the promise returned by `TtsBase.spawnObjectJSON`
+-- will adopt the value returned by the callback function.
 --
--- You may replace the global spawnObjectJSON with this function.
+-- WARNING: The `return_obj` argument is DEPERECATED/OBSOLETE.
 
 local wrapped_spawn_object_json = spawnObjectJSON
 
@@ -103,6 +108,13 @@ function spawner(wrapped_function, args)
          spawned_object = wrapped_function(args)
       end
    )
+
+   if args.immediate_callback then
+      local success, rv = pcall(args.immediate_callback, spawned_obj)
+      if not success then
+         TtsMsgUtils.broadcast_error(rv)
+      end
+   end
 
    if args.return_obj then
       return promise, spawned_obj
