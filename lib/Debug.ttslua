@@ -2,6 +2,9 @@
 -- Utils to aid debugging.
 -- ================================================================================
 
+-- Modules.
+local TtsPlayerUtils = require("kintastic/lib/TtsPlayerUtils")
+
 -- The module.
 local Debug = { }
 
@@ -30,13 +33,7 @@ Debug.require = require
 -- ----------------------------------------
 -- Public function Debug.get_host
 
-function get_host()
-   for i, player in ipairs(Player.getPlayers()) do
-      if player.host then
-         return player
-      end
-   end
-end
+Debug.get_host = TtsPlayerUtils.get_host
 
 
 -- ----------------------------------------
