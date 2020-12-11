@@ -328,14 +328,17 @@ end
 -- Note that this isn't a method!
 
 function Promise.all_settled_error_logger(value)
+   local values = { }
    for result in ivalues(value) do
       if result.status == "rejected" then
          -- XXX Should handle weird reasons better. Especially since this is in a loop.
          broadcastToAll(result.reason, Color.Red)
+      else
+         table.insert(values, result.value)
       end
    end
 
-   return value
+   return values
 end
 
 
