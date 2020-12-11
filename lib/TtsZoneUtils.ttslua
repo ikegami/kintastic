@@ -60,6 +60,31 @@ function TtsZoneUtils.find_zone(zones, test)
 end
 
 
+-- ----------------------------------------
+-- Public function TtsZoneUtils.find_zones_containing_object
+--
+-- Only finds scripting zones at the time.
+-- Parameters may allow this behavour to
+-- be controlled in the future.
+--
+-- WARNING: Expensive!
+
+function TtsZoneUtils.find_zones_containing_object(obj, reserved)
+   local zones = { }
+   for i, maybe_zone in ipairs(getAllObjects()) do
+      if maybe_zone.name == "ScriptingTrigger" then
+         for i, maybe_obj in ipairs(maybe_zone.getObjects()) do
+            if maybe_obj == obj then
+               table.insert(zones, maybe_zone)
+            end
+         end
+      end
+   end
+
+   return zones
+end
+
+
 -- ================================================================================
 
 return TtsZoneUtils
