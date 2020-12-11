@@ -4,6 +4,7 @@
 
 -- Modules.
 local Debug          = require("kintastic/lib/Debug")
+local TableLock      = require("kintastic/lib/TableLock")
 local TtsPlayerUtils = require("kintastic/lib/TtsPlayerUtils")
 local TtsZoneUtils   = require("kintastic/lib/TtsZoneUtils")
 
@@ -29,9 +30,9 @@ function Devel.import_event_handlers()
             return old_handler(...)
          end
       end
-      _G[event] = new_handler
+      TableLock.declare_and_set(_G, event, new_handler)
    else
-      _G[event] = Devel[event]
+      TableLock.declare_and_set(_G, event, Devel[event])
    end
 end
 
