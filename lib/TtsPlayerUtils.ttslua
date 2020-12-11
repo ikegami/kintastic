@@ -14,6 +14,33 @@ local TtsPlayerUtils = { }
 
 
 -- ================================================================================
+-- Privates
+
+-- ----------------------------------------
+-- Private constants
+
+local COLOR_NAMES = {
+   "White",
+   "Brown",
+   "Red",
+   "Orange",
+   "Yellow",
+   "Green",
+   "Teal",
+   "Blue",
+   "Purple",
+   "Pink",
+   "Grey",
+   "Black",
+}
+
+local COLOR_NAMES_LOOKUP = { }
+for i, color_name in ipairs(COLOR_NAMES) do
+   COLOR_NAMES_LOOKUP[color_name] = true
+end
+
+
+-- ================================================================================
 -- Public interface
 
 -- ----------------------------------------
@@ -124,13 +151,12 @@ function TtsPlayerUtils.decolor(name)
    end
 
    local color_name = string.sub(name, 1, pos-1)
-   if not Player[color_name] then
+   if not COLOR_NAMES_LOOKUP[color_name] then
       return name
    end
 
    return string.sub(name, pos+1), color_name
 end
-
 
 
 -- ================================================================================
