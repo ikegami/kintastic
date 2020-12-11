@@ -29,6 +29,7 @@ return {
 
    -- TTS-specific, meta.
    [ "kintastic/lib/Debug"                ] = require("kintastic/lib/Debug"),
+   [ "kintastic/lib/Devel"                ] = require("kintastic/lib/Devel"),
    [ "kintastic/lib/WarningHandlers"      ] = require("kintastic/lib/WarningHandlers"),
    [ "kintastic/lib/Const"                ] = require("kintastic/lib/Const"),
    [ "kintastic/lib/TableLock"            ] = require("kintastic/lib/TableLock"),

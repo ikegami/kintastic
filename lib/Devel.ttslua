@@ -1,0 +1,116 @@
+-- ================================================================================
+-- Utils to aid development.
+-- ================================================================================
+
+-- Modules.
+local Debug          = require("kintastic/lib/Debug")
+local TtsPlayerUtils = require("kintastic/lib/TtsPlayerUtils")
+local TtsZoneUtils   = require("kintastic/lib/TtsZoneUtils")
+
+-- Imports.
+local find_zones_containing_object = TtsZoneUtils.find_zones_containing_object
+
+-- The module.
+local Devel = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function Devel.import_event_handlers
+
+function Devel.import_event_handlers()
+   local event = "onScriptingButtonDown"
+   if _G[event] then
+      local old_handler = _G[event]
+      local new_handler = function(...)
+         if not Devel[event]() then
+            return old_handler(...)
+         end
+      end
+      _G[event] = new_handler
+   else
+      _G[event] = Devel[event]
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function Devel.make_zone_tangible
+
+function Devel.make_zone_tangible(zone)
+   if not zone or zone.name ~= "ScriptingTrigger" then
+      error("Invalid input.")
+   end
+
+   local data = zone.getData()
+   data.Name = "BlockSquare"
+   data.Locked = false
+   data.ColorDiffuse = { r = 0xB0/0xFF, g = 0xD1/0xFF, b = 0xE1/0xFF, a = 0xC8/0xFF }
+
+   zone.destruct()
+
+   return spawnObjectData({ data = data })
+end
+
+
+-- ----------------------------------------
+-- Public function Devel.make_zone_intangible
+
+function Devel.make_zone_intangible(obj)
+   if not obj or obj.name ~= "BlockSquare" then
+      error("Invalid input.")
+   end
+
+   local position = obj.getPosition()
+   local rotation = obj.getRotation()
+   local scale    = obj.getScale()
+
+   local data = obj.getData()
+   data.Name = "ScriptingTrigger"
+   data.Locked = true
+   data.ColorDiffuse = { r = 1, g = 1, b = 1, a = 0x82/0xFF }
+
+   obj.destruct()
+
+   return spawnObjectData({
+      data     = data,
+      position = position,  -- Using the default didn't always work.
+      rotation = rotation,
+      scale    = scale,
+   })
+end
+
+
+-- ----------------------------------------
+-- Public function Devel.onScriptingButtonDown
+
+function Devel.onScriptingButtonDown(index, color_name)
+   if index ~= 5 then
+      return false
+   end
+
+   local player = Player[color_name]
+   local obj = player.getHoverObject()
+   if not obj or obj.name ~= "BlockSquare" then
+      return
+   end
+
+   local zones = find_zones_containing_object(obj)
+   if #zones == 0 then
+      Devel.make_zone_intangible(obj)
+   elseif #zones == 1 then
+      obj.destruct()
+      Devel.make_zone_tangible(zones[1])
+   else
+      error("Object touches multiple zones.")
+   end
+
+   return true
+end
+
+
+-- ================================================================================
+
+return Devel
