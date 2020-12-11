@@ -57,11 +57,11 @@ TtsObject.setRotationSmooth   = |obj, ...|wrap_smooth_transform(  obj, obj.setRo
 TtsObject.rotate              = |obj, ...|wrap_smooth_transform(  obj, obj.rotate,                            ... )
 TtsObject.setScale            = |obj, ...|wrap_instant_transform( obj, obj.setScale,                          ... )
 TtsObject.scale               = |obj, ...|wrap_instant_transform( obj, obj.scale,                             ... )
+TtsObject.flip                = |obj, ...|wrap_smooth_transform(  obj, obj.flip,                              ... )
 TtsObject.moveAtop            = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.moveAtop,           obj, ... )
 TtsObject.moveAtopSmooth      = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.moveAtopSmooth,     obj, ... )
 TtsObject.moveToZoneTop       = |obj, ...|wrap_instant_transform( obj, BaseTtsObject.moveAtop,           obj, ... )
 TtsObject.moveToZoneTopSmooth = |obj, ...|wrap_smooth_transform(  obj, BaseTtsObject.moveAtopSmooth,     obj, ... )
-
 
 -- ----------------------------------------
 -- Public function TtsObject.takeObject
