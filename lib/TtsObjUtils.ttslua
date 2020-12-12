@@ -38,8 +38,6 @@ function TtsObjUtils.resolve_guids(tbl, not_required)
             resolved[k] = obj
          elseif v_type == "table" then
             resolved[k] = helper(v)
-         elseif v_type == "nil" then
-            resolved[k] = nil
          else
             TtsMsgUtils.broadcast_internal_error("Don't know how to resolve a " .. v_type)
          end
