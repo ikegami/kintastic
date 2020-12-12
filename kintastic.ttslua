@@ -13,6 +13,7 @@ return {
    [ "kintastic/lib/GridUtils"            ] = require("kintastic/lib/GridUtils"),
    [ "kintastic/lib/Introspection"        ] = require("kintastic/lib/Introspection"),
    [ "kintastic/lib/Iters"                ] = require("kintastic/lib/Iters"),
+   [ "kintastic/lib/Math"                 ] = require("kintastic/lib/Math"),
    [ "kintastic/lib/ObjUtils"             ] = require("kintastic/lib/ObjUtils"),
    [ "kintastic/lib/Queue"                ] = require("kintastic/lib/Queue"),
    [ "kintastic/lib/Semaphore"            ] = require("kintastic/lib/Semaphore"),
