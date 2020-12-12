@@ -23,6 +23,7 @@ local Devel = { }
 
 function Devel.import_event_handlers()
    local event = "onScriptingButtonDown"
+   TableLock.declare(_G, event)
    if _G[event] then
       local old_handler = _G[event]
       local new_handler = function(...)
@@ -30,9 +31,9 @@ function Devel.import_event_handlers()
             return old_handler(...)
          end
       end
-      TableLock.declare_and_set(_G, event, new_handler)
+      _G[event] = new_handler
    else
-      TableLock.declare_and_set(_G, event, Devel[event])
+      _G[event] = Devel[event]
    end
 end
 
