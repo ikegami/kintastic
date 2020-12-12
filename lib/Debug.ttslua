@@ -36,6 +36,23 @@ Debug.get_host = TtsPlayerUtils.get_host
 
 
 -- ----------------------------------------
+-- Public function Debug.ping
+
+function Debug.ping(guid_or_obj)
+   local obj
+   if type(guid_or_obj) == "string" then
+      obj = getObjectFromGUID(guid_or_obj)
+   else
+      obj = guid_or_obj
+   end
+
+   if obj then
+      Debug.get_host().pingTable(obj.getPosition())
+   end
+end
+
+
+-- ----------------------------------------
 -- Public function Debug.dd
 --
 -- usage:
