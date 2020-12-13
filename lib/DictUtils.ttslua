@@ -53,18 +53,26 @@ end
 
 
 -- ----------------------------------------
--- Public function DictUtils.select
+-- Public function DictUtils.pick
 
-function DictUtils.select(dict, test)
+function DictUtils.pick(dict, test)
    local selected = { }
    for k, v in pairs(dict) do
       if test(k, v) then
-         selected[k] = v
+         picked[k] = v
       end
    end
 
-   return selected
+   return picked
 end
+
+
+-- ----------------------------------------
+-- Public function DictUtils.select
+--
+-- WARNING: DEPRECATED/OBSLETE.
+
+DictUtils.select = DictUtils.pick
 
 
 -- ----------------------------------------
