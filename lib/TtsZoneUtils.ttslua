@@ -45,8 +45,9 @@ end
 
 function TtsZoneUtils.find_zone(zones, test)
    if not is_callable(test) then
+      local target = test
       test = function(obj)
-         return obj == test
+         return obj == target
       end
    end
 
