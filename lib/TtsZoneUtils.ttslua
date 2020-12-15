@@ -37,6 +37,8 @@ end
 --
 -- Find the zone that contains an object.
 --
+-- WARNING: Returns two values.
+--
 -- Usage:
 --    local i, zone = TtsZoneUtils.find_zone(zones, obj_to_find)
 --    local i, zone = TtsZoneUtils.find_zone(zones, |obj|obj==obj_to_find)
