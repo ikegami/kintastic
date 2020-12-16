@@ -15,15 +15,37 @@ local TtsWait = { }
 -- ----------------------------------------
 -- Public function TtsWait.condition
 --
+-- WARNING: DEPRECATED/OBSLETE.
+
+function TtsWait.condition(cond_func, timeout, timeout_reason)
+   return TtsWait.cond(cond_func, nil, timeout, timeout_reason)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsWait.condition
+--
+-- WARNING: Returns two values.
+-- WARNING: DEPRECATED/OBSLETE.
+
+function TtsWait.condition_with_cancel(cond_func, timeout, timeout_reason)
+   return TtsWait.cond_with_cancel(cond_func, nil, timeout, timeout_reason)
+end
+
+
+-- ----------------------------------------
+-- Public function TtsWait.cond
+--
 -- Returns a promises that's fulfilled once the condition becomes true.
+-- It will be fulfilled with `value` (if provided).
 -- If `timeout` is provided, the promise becomes rejected with "Timeout" once the timeout occurs.
 -- If `timeout_reason` is provided, it will be used as the rejection reason instead of "Timeout".
 
-function TtsWait.condition(cond_func, timeout, timeout_reason)
+function TtsWait.cond(cond_func, value, timeout, timeout_reason)
    return Promise:new(
       function(resolve, reject)
          local done = false
-         local resolve = function(value)  done = true resolve(value) end
+         local resolve = function()       done = true resolve(value) end
          local reject  = function(reason) done = true reject(reason) end
 
          if timeout == nil then
@@ -37,7 +59,7 @@ end
 
 
 -- ----------------------------------------
--- Public function TtsWait.condition_with_cancel
+-- Public function TtsWait.cond_with_cancel
 --
 -- This function is identical to `TtsWait.condition` except a second value is returned.
 -- It consists of a function which can be used to cancel the wait.
@@ -46,12 +68,12 @@ end
 --
 -- WARNING: Returns two values.
 
-function TtsWait.condition_with_cancel(cond_func, timeout, timeout_reason)
+function TtsWait.cond_with_cancel(cond_func, value, timeout, timeout_reason)
    local canceller
    local promise = Promise:new(
       function(resolve, reject)
          local done = false
-         local resolve = function(value)  done = true resolve(value) end
+         local resolve = function()       done = true resolve(value) end
          local reject  = function(reason) done = true reject(reason) end
 
          local id
@@ -78,11 +100,12 @@ end
 -- Public function TtsWait.frames
 --
 -- Returns a promises that's fulfilled after `frame_count` frames.
+-- It will be fulfilled with `value` (if provided).
 
-function TtsWait.frames(frame_count)
+function TtsWait.frames(frame_count, value)
    return Promise:new(
       function(resolve, reject)
-         Wait.frames(resolve, frame_count)
+         Wait.frames(||resolve(value), frame_count)
       end
    )
 end
@@ -98,11 +121,11 @@ end
 --
 -- WARNING: Returns two values.
 
-function TtsWait.frames_with_cancel(frame_count)
+function TtsWait.frames_with_cancel(frame_count, value)
    local canceller
    local promise = Promise:new(
       function(resolve, reject)
-         local id = Wait.frames(resolve, frame_count)
+         local id = Wait.frames(||resolve(value), frame_count)
 
          canceller = function(cancel_reason)
             if not done then
@@ -121,11 +144,12 @@ end
 -- Public function TtsWait.time
 --
 -- Returns a promises that's fulfilled after `secs` (possibly-fractional) seconds.
+-- It will be fulfilled with `value` (if provided).
 
-function TtsWait.time(secs)
+function TtsWait.time(secs, value)
    return Promise:new(
       function(resolve, reject)
-         Wait.time(resolve, secs)
+         Wait.time(||resolve(value), secs)
       end
    )
 end
@@ -141,11 +165,11 @@ end
 --
 -- WARNING: Returns two values.
 
-function TtsWait.time_with_cancel(secs)
+function TtsWait.time_with_cancel(secs, value)
    local canceller
    local promise = Promise:new(
       function(resolve, reject)
-         local id = Wait.time(resolve, secs)
+         local id = Wait.time(||resolve(value), secs)
 
          canceller = function(cancel_reason)
             if not done then
