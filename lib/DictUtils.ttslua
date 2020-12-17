@@ -56,7 +56,7 @@ end
 -- Public function DictUtils.pick
 
 function DictUtils.pick(dict, test)
-   local selected = { }
+   local picked = { }
    for k, v in pairs(dict) do
       if test(k, v) then
          picked[k] = v
