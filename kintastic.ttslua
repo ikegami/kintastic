@@ -22,6 +22,7 @@ return {
 
    -- TTS-specific.
    [ "kintastic/lib/Debounce"             ] = require("kintastic/lib/Debounce"),
+   [ "kintastic/lib/Debouncer"            ] = require("kintastic/lib/Debouncer"),
    [ "kintastic/lib/TtsMsgUtils"          ] = require("kintastic/lib/TtsMsgUtils"),
    [ "kintastic/lib/TtsObject"            ] = require("kintastic/lib/TtsObject"),
    [ "kintastic/lib/TtsObjUtils"          ] = require("kintastic/lib/TtsObjUtils"),
