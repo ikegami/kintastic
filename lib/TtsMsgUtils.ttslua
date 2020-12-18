@@ -38,6 +38,14 @@ end
 
 
 -- ----------------------------------------
+-- Public function TtsMsgUtils.print_error
+
+function TtsMsgUtils.print_error(msg)
+   printToAll(msg, ERROR_COLOR)
+end
+
+
+-- ----------------------------------------
 -- Public function TtsMsgUtils.broadcast_error
 
 -- receiver_color_name is optional.
