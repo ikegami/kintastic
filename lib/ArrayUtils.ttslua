@@ -150,12 +150,13 @@ end
 
 
 -- ----------------------------------------
+-- Public function ArrayUtils.dipairs
 -- Public function ArrayUtils.ipairs_desc
 --
 -- Usage:
---    for index, value in ArrayUtils.ipairs_desc(array) do ... end
+--    for index, value in ArrayUtils.dipairs(array) do ... end
 
-function ArrayUtils.ipairs_desc(array)
+function ArrayUtils.dipairs(array)
    local i = #array + 1
    return function()
       if i > 1 then
@@ -165,12 +166,15 @@ function ArrayUtils.ipairs_desc(array)
    end
 end
 
+ArrayUtils.ipairs_desc = ArrayUtils.dipairs
+
 
 -- ----------------------------------------
+-- Public function ArrayUtils.divalues
 -- Public function ArrayUtils.ivalues_desc
 --
 -- Usage:
---    for value in ArrayUtils.ivalues_desc(array) do ... end
+--    for value in ArrayUtils.divalues(array) do ... end
 
 function ArrayUtils.ivalues_desc(array)
    local i = #array + 1
@@ -182,27 +186,32 @@ function ArrayUtils.ivalues_desc(array)
    end
 end
 
+ArrayUtils.ivalues_desc = ArrayUtils.divalues
+
 
 -- ----------------------------------------
+-- Public function ArrayUtils.sivalues
 -- Public function ArrayUtils.sorted_ivalues
 
 -- Iterates over an array in ascending value order (default) or in a user-defined order.
 --
 -- Usage:
---    for value in ArrayUtils.sorted_ivalues(array)               do ... end
---    for value in ArrayUtils.sorted_ivalues(array, compare_func) do ... end
+--    for value in ArrayUtils.sivalues(array)               do ... end
+--    for value in ArrayUtils.sivalues(array, compare_func) do ... end
 --
 -- Example:
 --
---    local compare = function(a, b)
---       return a.name < b.name
---    end
+--    local characters = {
+--       { name = ..., ... },
+--       { name = ..., ... },
+--       ...
+--    }
 --
---    for character in ArrayUtils.sorted_ivalues(characters, compare) do
+--    for character in ArrayUtils.sivalues(characters, |a,b|a.name < b.name) do
 --       ...
 --    end
 
-function ArrayUtils.sorted_ivalues(array, compare)
+function ArrayUtils.sivalues(array, compare)
    local copy = ArrayUtils.copy(array)
    table.sort(copy, compare)
    local i = 0         -- Iterator state
@@ -213,6 +222,8 @@ function ArrayUtils.sorted_ivalues(array, compare)
       end
    end
 end
+
+ArrayUtils.sorted_ivalues = ArrayUtils.sivalues
 
 
 -- ================================================================================

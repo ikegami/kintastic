@@ -20,21 +20,27 @@ Iters.ivalues = ArrayUtils.ivalues
 
 
 -- ----------------------------------------
+-- Public function Iters.dipairs
 -- Public function Iters.ipairs_desc
 
+Iters.dipairs     = ArrayUtils.dipairs
 Iters.ipairs_desc = ArrayUtils.ipairs_desc
 
 
 -- ----------------------------------------
+-- Public function Iters.divalues
 -- Public function Iters.ivalues_desc
 
+Iters.divalues     = ArrayUtils.divalues
 Iters.ivalues_desc = ArrayUtils.ivalues_desc
 
 
 -- ----------------------------------------
--- Public function Iters.sorted_values
+-- Public function Iters.sivalues
+-- Public function Iters.sorted_ivalues
 
-Iters.sorted_values = ArrayUtils.sorted_values
+Iters.sivalues       = ArrayUtils.sivalues
+Iters.sorted_ivalues = ArrayUtils.sorted_ivalues
 
 
 -- ----------------------------------------
@@ -50,8 +56,10 @@ Iters.values = DictUtils.values
 
 
 -- ----------------------------------------
+-- Public function Iters.spairs
 -- Public function Iters.sorted_pairs
 
+Iters.spairs       = DictUtils.spairs
 Iters.sorted_pairs = DictUtils.sorted_pairs
 
 

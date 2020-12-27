@@ -152,27 +152,30 @@ end
 
 
 -- ----------------------------------------
+-- Public function DictUtils.spairs
 -- Public function DictUtils.sorted_pairs
 
 -- Iterates over a dictionary in ascending key order (default) or in a user-defined order.
 --
 -- Usage:
---    for key, value in DictUtils.sorted_pairs(dict)               do ... end
---    for key, value in DictUtils.sorted_pairs(dict, compare_func) do ... end
+--    for key, value in DictUtils.spairs(dict)               do ... end
+--    for key, value in DictUtils.spairs(dict, compare_func) do ... end
 --
 -- Example:
 --
---    local compare = function(a, b)
---       return characters[a].name < characters[b].name
---    end
+--    local characters = {
+--       Red  = { name = ..., ... },
+--       Blue = { name = ..., ... },
+--       ...
+--    }
 --
---    for id, character in DictUtils.sorted_pairs(characters, compare) do
+--    for player_color, character in DictUtils.spairs(characters, |ka,va,kb,vb|va.name < vb.name) do
 --       ...
 --    end
 
-function DictUtils.sorted_pairs(dict, compare)
+function DictUtils.spairs(dict, compare)
    local ks = get_keys(dict)
-   table.sort(ks, compare)
+   table.sort(ks, |ka,kb|compare(ka, dict[ka], kb, dict[kb]))
    local i = 0         -- Iterator state
    return function()   -- Iterator function
       i = i + 1
@@ -181,6 +184,8 @@ function DictUtils.sorted_pairs(dict, compare)
       end
    end
 end
+
+DictUtils.sorted_pairs = DictUtils.spairs
 
 
 -- ================================================================================
