@@ -17,6 +17,7 @@ return {
    [ "kintastic/lib/ObjUtils"             ] = require("kintastic/lib/ObjUtils"),
    [ "kintastic/lib/Queue"                ] = require("kintastic/lib/Queue"),
    [ "kintastic/lib/Semaphore"            ] = require("kintastic/lib/Semaphore"),
+   [ "kintastic/lib/Set"                  ] = require("kintastic/lib/Set"),
    [ "kintastic/lib/StrUtils"             ] = require("kintastic/lib/StrUtils"),
    [ "kintastic/lib/TableUtils"           ] = require("kintastic/lib/TableUtils"),
 

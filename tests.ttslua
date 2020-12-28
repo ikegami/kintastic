@@ -17,6 +17,7 @@ local test_modules = {
    { "ColorUtils", require("kintastic/tests/ColorUtils") },
    { "Crc32",      require("kintastic/tests/Crc32") },
    { "Encode",     require("kintastic/tests/Encode") },
+   { "Set",        require("kintastic/tests/Set") },
 }
 
 local test_modules_by_name = { }

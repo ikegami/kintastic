@@ -1,0 +1,167 @@
+-- ================================================================================
+-- Set class
+-- ================================================================================
+
+-- The class.
+local Set = { }
+
+Set.mt = {
+   __index = Set,
+   __add = |set1,set2|Set:union(set1, set2),
+   __sub = |set1,set2|Set:difference(set1, set2),
+   __mul = |set1,set2|Set:intersection(set1, set2),
+}
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public constructor Set::new
+--
+-- Usage:
+--    local set = Set:new()
+--    local set = Set:new(array)
+
+function Set.new(class, array)
+   local self = setmetatable({}, class.mt)
+
+   local data = { }
+   local size = 0
+   if array then
+      for i, v in ipairs(array) do
+         data[v] = true
+      end
+   end
+
+   self._data = data
+
+   return self
+end
+
+
+-- ================================================================================
+-- Public class methods
+
+-- ----------------------------------------
+-- Public class method Set:union
+-- Also available as set1 + set2
+
+function Set.union(class, set1, set2)
+   local self = class:new()
+   local data = self._data
+   for v in set1:values() do data[v] = true end
+   for v in set2:values() do data[v] = true end
+   return self
+end
+
+
+-- ----------------------------------------
+-- Public class method Set:difference
+-- Also available as set1 - set2
+
+function Set.difference(class, set1, set2)
+   local self = class:new()
+   local data = self._data
+   for v in set1:values() do data[v] = true end
+   for v in set2:values() do data[v] = nil  end
+   return self
+end
+
+
+-- ----------------------------------------
+-- Public class method Set:intersection
+-- Also available as set1 * set2
+
+function Set.intersection(class, set1, set2)
+   local self = class:new()
+
+   local data = self._data
+   for v in set1:values() do
+      if set2:has(v) then
+         data[v] = true
+      end
+   end
+
+   return self
+end
+
+
+-- ================================================================================
+-- Public instance methods
+
+-- ----------------------------------------
+-- Public instance method set:add
+
+function Set:add(value)
+   self._data[value] = true
+end
+
+
+-- ----------------------------------------
+-- Public instance method set:delete
+
+function Set:delete(value)
+   self._data[value] = nil
+end
+
+
+-- ----------------------------------------
+-- Public instance method set:has
+
+function Set:has(value)
+   return self._data[value] or false
+end
+
+
+-- ----------------------------------------
+-- Public instance method set:size
+
+function Set:size()
+   local size = 0
+   for v in pairs(self._data) do
+      size = size + 1
+   end
+
+   return size
+end
+
+
+-- ----------------------------------------
+-- Public instance method set:values
+--
+-- Returns an iterator.
+
+function Set:values()
+   local data = self._data
+   local i = nil
+   return function()
+      i = next(data, i)
+      -- `i ~= nil` would cause issues in the event of destroyed TTS objects in the set.
+      -- `type(i) ~= nil` would be most reliable, but surely slower.
+      if i or i ~= nil then
+         return i
+      end
+   end
+end
+
+
+-- ----------------------------------------
+-- Public instance method set:get_values
+--
+-- Returns a table.
+
+function Set:get_values()
+   local values = { }
+
+   for v in pairs(self._data) do
+      table.insert(values, v)
+   end
+
+   return values
+end
+
+
+-- ================================================================================
+
+return Set
