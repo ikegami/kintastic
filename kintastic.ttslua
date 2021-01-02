@@ -20,6 +20,7 @@ return {
    [ "kintastic/lib/Set"                  ] = require("kintastic/lib/Set"),
    [ "kintastic/lib/StrUtils"             ] = require("kintastic/lib/StrUtils"),
    [ "kintastic/lib/TableUtils"           ] = require("kintastic/lib/TableUtils"),
+   [ "kintastic/lib/Wrap"                 ] = require("kintastic/lib/Wrap"),
 
    -- TTS-specific.
    [ "kintastic/lib/Debounce"             ] = require("kintastic/lib/Debounce"),

@@ -18,6 +18,7 @@ local test_modules = {
    { "Crc32",      require("kintastic/tests/Crc32") },
    { "Encode",     require("kintastic/tests/Encode") },
    { "Set",        require("kintastic/tests/Set") },
+   { "Wrap",       require("kintastic/tests/Wrap") },
 }
 
 local test_modules_by_name = { }

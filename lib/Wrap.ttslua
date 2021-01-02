@@ -1,0 +1,94 @@
+-- ================================================================================
+-- Function wrapping utilities.
+-- ================================================================================
+
+-- Modules.
+local TableLock = require("kintastic/lib/TableLock")
+
+-- The module.
+local Wrap = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function Wrap.wrap
+
+function Wrap.wrap(tbl, name, f)
+   TableLock.declare(tbl, name)
+   local old_f = tbl[name] or function() end
+   tbl[name] = |...|f(old_f, ...)
+end
+
+
+-- ----------------------------------------
+-- Public function Wrap.before
+
+function Wrap.before(tbl, name, f)
+   TableLock.declare(tbl, name)
+   local old_f = tbl[name]
+   if old_f then
+      tbl[name] = function(...)
+         f(...)
+         return old_f(...)
+      end
+   else
+      tbl[name] = function(...)
+         f(...)
+      end
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function Wrap.after
+
+function Wrap.after(tbl, name, f)
+   TableLock.declare(tbl, name)
+   local old_f = tbl[name]
+   if old_f then
+      tbl[name] = function(...)
+         local rv = { old_f(...) }
+         f(...)
+         return table.unpack(rv)
+      end
+   else
+      tbl[name] = function(...)
+         f(...)
+      end
+   end
+end
+
+
+-- ----------------------------------------
+-- Public function Wrap.add_event_listener
+--
+-- Note: An extra unused parmeter is passed to allow for future expansion.
+
+local listeners_by_event = { }
+
+function Wrap.add_event_listener(name, f)
+   TableLock.declare(_G, name)
+
+   local listeners = listeners_by_event[name]
+   if listeners then
+      table.insert(listeners, f)
+      return
+   end
+
+   listeners = { f }
+   listeners_by_event[name] = listeners
+   Wrap.after(_G, name,
+      function(...)
+         for i, listener in ipairs(listeners) do
+            listener({}, ...)
+         end
+      end
+   )
+end
+
+
+-- ================================================================================
+
+return Wrap

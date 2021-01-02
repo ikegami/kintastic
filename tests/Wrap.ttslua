@@ -1,0 +1,200 @@
+local Wrap = require("kintastic/lib/Wrap")
+
+local wrap               = Wrap.wrap
+local before             = Wrap.before
+local after              = Wrap.after
+local add_event_listener = Wrap.add_event_listener
+
+local tests = { }
+
+local logged
+
+function join(sep, ...)
+   return table.concat({ ... }, sep)
+end
+
+local function log(...)
+   logged = logged .. join("|", ...) .. "\n"
+end
+
+local function uc(...)
+   local rv = { }
+   for i, v in ipairs({ ... }) do
+      table.insert(rv, string.upper(v))
+   end
+
+   return table.unpack(rv)
+end
+
+local function test(...)
+   log("base", ...)
+   return uc(...)
+end
+
+table.insert(tests, {
+   "baseline",
+   function()
+      logged = ""
+      log("rv", test("a", "b"))
+      return logged == join("",
+         "base|a|b\n",
+         "rv|A|B\n"
+      )
+   end
+})
+
+table.insert(tests, {
+   "wrap",
+   function()
+      local Mod = { test = test }
+      wrap(Mod, "test",
+         function(wrapped, ...)
+            log("wrapper", ...)
+            log("base_rv", wrapped("c", "d"))
+            return uc(...)
+         end
+      )
+
+      logged = ""
+      log("rv", Mod.test("a", "b"))
+      return logged == join("",
+         "wrapper|a|b\n",
+         "base|c|d\n",
+         "base_rv|C|D\n",
+         "rv|A|B\n"
+      )
+   end
+})
+
+table.insert(tests, {
+   "wrap nothing",
+   function()
+      local Mod = { }
+      wrap(Mod, "test",
+         function(wrapped, ...)
+            log("wrapper", ...)
+            log("base_rv", wrapped("c", "d"))
+            return uc(...)
+         end
+      )
+
+      logged = ""
+      log("rv", Mod.test("a", "b"))
+      return logged == join("",
+         "wrapper|a|b\n",
+         "base_rv\n",
+         "rv|A|B\n"
+      )
+   end
+})
+
+table.insert(tests, {
+   "before",
+   function()
+      local Mod = { test = test }
+      before(Mod, "test",
+         function(...)
+            log("added", ...)
+            return "dummy"
+         end
+      )
+
+      logged = ""
+      log("rv", Mod.test("a", "b"))
+      return logged == join("",
+         "added|a|b\n",
+         "base|a|b\n",
+         "rv|A|B\n"
+      )
+   end
+})
+
+table.insert(tests, {
+   "before nothing",
+   function()
+      local Mod = { }
+      before(Mod, "test",
+         function(...)
+            log("added", ...)
+            return "dummy"
+         end
+      )
+
+      logged = ""
+      log("rv", Mod.test("a", "b"))
+      return logged == join("",
+         "added|a|b\n",
+         "rv\n"
+      )
+   end
+})
+
+table.insert(tests, {
+   "after",
+   function()
+      local Mod = { test = test }
+      after(Mod, "test",
+         function(...)
+            log("added", ...)
+            return "dummy"
+         end
+      )
+
+      logged = ""
+      log("rv", Mod.test("a", "b"))
+      return logged == join("",
+         "base|a|b\n",
+         "added|a|b\n",
+         "rv|A|B\n"
+      )
+   end
+})
+
+table.insert(tests, {
+   "after nothing",
+   function()
+      local Mod = { }
+      after(Mod, "test",
+         function(...)
+            log("added", ...)
+            return "dummy"
+         end
+      )
+
+      logged = ""
+      log("rv", Mod.test("a", "b"))
+      return logged == join("",
+         "added|a|b\n",
+         "rv\n"
+      )
+   end
+})
+
+table.insert(tests, {
+   "add_event_listener",
+   function()
+      add_event_listener("onTest",
+         function(reserved, ...)
+            log("added1", ...)
+            return "dummy"
+         end
+      )
+
+      add_event_listener("onTest",
+         function(reserved, ...)
+            log("added2", ...)
+            return "dummy"
+         end
+      )
+
+      logged = ""
+      log("rv", onTest("a", "b"))
+      return logged == join("",
+         "added1|a|b\n",
+         "added2|a|b\n",
+         "rv\n"
+      )
+   end
+})
+
+return tests
