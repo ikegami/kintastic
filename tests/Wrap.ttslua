@@ -170,23 +170,23 @@ table.insert(tests, {
    end
 })
 
+add_event_listener("onTest",
+   function(reserved, ...)
+      log("added1", ...)
+      return "dummy"
+   end
+)
+
+add_event_listener("onTest",
+   function(reserved, ...)
+      log("added2", ...)
+      return "dummy"
+   end
+)
+
 table.insert(tests, {
    "add_event_listener",
    function()
-      add_event_listener("onTest",
-         function(reserved, ...)
-            log("added1", ...)
-            return "dummy"
-         end
-      )
-
-      add_event_listener("onTest",
-         function(reserved, ...)
-            log("added2", ...)
-            return "dummy"
-         end
-      )
-
       logged = ""
       log("rv", onTest("a", "b"))
       return logged == join("",
