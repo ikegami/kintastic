@@ -70,16 +70,22 @@ end
 -- - opts:         Optional table of options:
 --   - cool_down:  A period of time in which for which the button
 --                 will be ignored after it has been clicked.
+--   - on_disable: Called when the button becomes disabled
+--                 (manually or when a cool-down period begins).
+--   - on_enable:  Called when the button becomes enabled
+--                 (manually or when a cool-down period begins).
 
 function Debouncer.new(class, name, setter, handler, opts)
    local self = setmetatable({}, class.mt)
 
-   self.name    = name
-   self.setter  = setter
-   self.handler = handler
-   self.opts    = opts or { }
-   self.counter = 0
-   self.wrapped_handler = nil
+   self.name              = name
+   self.setter            = setter
+   self.handler           = handler
+   self.opts              = opts or { }
+   self.counter           = 0
+   self.manually_disabled = false
+   self.in_cool_down      = false
+   self.wrapped_handler   = nil
 
    return self
 end
@@ -89,16 +95,15 @@ end
 -- Public instance method debouncer:install
 
 function Debouncer:install()
-   local disabled = false
-   local enabled = true
+   local expired = false
 
    local function button_used()
-      disabled = true
+      expired = true
       self:install()
    end
 
    local function wrapped_handler(...)
-      if disabled or not enabled then
+      if expired or self:_is_disabled() then
          return
       end
 
@@ -106,10 +111,11 @@ function Debouncer:install()
    end
 
    if self.opts.cool_down and self.counter > 0 then
-      enabled = false
+      self:_disable("in_cool_down")
+
       Wait.time(
          function()
-            enabled = true
+            self:_enable("in_cool_down")
          end,
          self.opts.cool_down
       )
@@ -141,6 +147,21 @@ end
 
 
 -- ----------------------------------------
+-- Public instance method debouncer:enable
+-- Public instance method debouncer:disable
+--
+-- Manually enable or disable the button.
+
+function Debouncer:disable()
+   self:_disable("manually_disabled")
+end
+
+function Debouncer:enable()
+   self:_enable("manually_disabled")
+end
+
+
+-- ----------------------------------------
 -- Public instance accessors
 
 function Debouncer:get_opt_cool_down()
@@ -149,6 +170,32 @@ end
 
 function Debouncer:set_opt_cool_down(val)
    self.opts.cool_down = val
+end
+
+
+-- ================================================================================
+-- Privates
+
+function Debouncer:_is_disabled()
+   return self.manually_disabled or self.in_cool_down
+end
+
+
+function Debouncer:_disable(attr)
+   local was_disabled = self:_is_disabled()
+   self[attr] = true
+   if not was_disabled and self.opts.on_disable then
+      self.opts.on_disable(self)
+   end
+end
+
+
+function Debouncer:_enable(attr)
+   self[attr] = false
+   local disabled = self:_is_disabled()
+   if not disabled and self.opts.on_enable then
+      self.opts.on_enable(self)
+   end
 end
 
 
