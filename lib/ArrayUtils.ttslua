@@ -176,7 +176,7 @@ ArrayUtils.ipairs_desc = ArrayUtils.dipairs
 -- Usage:
 --    for value in ArrayUtils.divalues(array) do ... end
 
-function ArrayUtils.ivalues_desc(array)
+function ArrayUtils.divalues(array)
    local i = #array + 1
    return function()
       if i > 1 then
