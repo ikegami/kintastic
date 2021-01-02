@@ -94,7 +94,7 @@ for i, test in ipairs({
    })
 
    table.insert(tests, {
-      method .. " (" .. op .. ")",
+      method .. " using " .. op,
       function()
          local result_set = dispatch[op](set1, set2)
          return compare(result_set:get_values(), expected)
