@@ -25,6 +25,45 @@ function StrUtils.ends_with(str, substr)
 end
 
 
+-- ----------------------------------------
+-- Public function StrUtils.split
+
+function StrUtils.split(str, pattern, plain, discard)
+   local len = string.len(str)
+   if len == 0 then
+      return { }
+   end
+
+   local rv = { }
+
+   local i = 1
+   while i <= len do
+      local j, k = string.find(str, pattern, i, plain)
+      if not j then
+         break
+      end
+
+      if k < j then
+         j = j + 1
+         k = k + 1
+      end
+
+      table.insert(rv, string.sub(str, i, j-1))
+      i = k + 1
+   end
+
+   table.insert(rv, string.sub(str, i))
+
+   if discard then
+      while #rv > 0 and rv[#rv] == "" do
+         table.remove(rv)
+      end
+   end
+
+   return rv
+end
+
+
 -- ================================================================================
 
 return StrUtils
