@@ -49,6 +49,36 @@ end
 
 
 -- ----------------------------------------
+-- Public function ArrayUtils.first
+
+function ArrayUtils.first(array, test)
+   local filtered = { }
+   for i, v in ipairs(array) do
+      if test(i, v) then
+         return v
+      end
+   end
+
+   return nil
+end
+
+
+-- ----------------------------------------
+-- Public function ArrayUtils.first_idx
+
+function ArrayUtils.first_idx(array, test)
+   local filtered = { }
+   for i, v in ipairs(array) do
+      if test(i, v) then
+         return i, v
+      end
+   end
+
+   return
+end
+
+
+-- ----------------------------------------
 -- Public function ArrayUtils.shuffle_inplace
 
 function ArrayUtils.shuffle_inplace(array)
