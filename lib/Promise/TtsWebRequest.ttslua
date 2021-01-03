@@ -1,0 +1,83 @@
+-- ================================================================================
+-- Promise-based version of WebRequest methods.
+-- ================================================================================
+
+-- Modules.
+local Promise = require("kintastic/lib/Promise")
+
+-- The module.
+local TtsWebRequest = { }
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public function TtsWebRequest.get
+
+function TtsWebRequest.get(url)
+   return Promise:new(
+      function(resolve, reject)
+         WebRequest.get(url,
+            function(response)
+               if response.is_error then
+                  reject(response.error)
+               elseif response.is_done then
+                  resolve(response.text)
+               else
+                  -- Handling progress is not yet supported.
+               end
+            end
+         )
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsWebRequest.post
+
+function TtsWebRequest.post(url, form)
+   return Promise:new(
+      function(resolve, reject)
+         WebRequest.post(url, form,
+            function(response)
+               if response.is_error then
+                  reject(response.error)
+               elseif response.is_done then
+                  resolve(response.text)
+               else
+                  -- Handling progress is not yet supported.
+               end
+            end
+         )
+      end
+   )
+end
+
+
+-- ----------------------------------------
+-- Public function TtsWebRequest.put
+
+function TtsWebRequest.put(url, data)
+   return Promise:new(
+      function(resolve, reject)
+         WebRequest.put(url, data,
+            function(response)
+               if response.is_error then
+                  reject(response.error)
+               elseif response.is_done then
+                  resolve(response.text)
+               else
+                  -- Handling progress is not yet supported.
+               end
+            end
+         )
+      end
+   )
+end
+
+
+-- ================================================================================
+
+return TtsWebRequest
