@@ -22,8 +22,10 @@ local FINITE_CONTAINERS = {   -- .name
    "CheckerStack",
    "ChipStack",
    "Custom_Model_Bag",
+   "Custom_Model_Stack",
    "Custom_Token_Stack",
    "Deck",
+   "DeckCustom",
 }
 
 local INFINITE_CONTAINERS = {   -- .name
