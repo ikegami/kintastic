@@ -29,6 +29,7 @@ return {
    [ "kintastic/lib/TtsObject"            ] = require("kintastic/lib/TtsObject"),
    [ "kintastic/lib/TtsObjUtils"          ] = require("kintastic/lib/TtsObjUtils"),
    [ "kintastic/lib/TtsPlayerUtils"       ] = require("kintastic/lib/TtsPlayerUtils"),
+   [ "kintastic/lib/TtsSaveEvent"         ] = require("kintastic/lib/TtsSaveEvent"),
    [ "kintastic/lib/TtsZoneUtils"         ] = require("kintastic/lib/TtsZoneUtils"),
 
    -- TTS-specific, meta.

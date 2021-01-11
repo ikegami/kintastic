@@ -1,0 +1,39 @@
+-- ================================================================================
+-- Make is posible to add listeners using `Wrap.add_event_listener` to `onSave`.
+-- Listeners must modify `SELF.script_state` directly instead
+-- of returning the serialized state to have an effect.
+-- ================================================================================
+
+-- Modules.
+local TableLock = require("kintastic/lib/TableLock")
+local Wrap      = require("kintastic/lib/Wrap")
+
+
+-- ================================================================================
+-- Public interface
+
+-- ----------------------------------------
+-- Public global variable SELF
+--
+-- An alias for global var `self` to avoid conflicts
+-- with local vars  and parameters named `self`.
+
+TableLock.declare_and_set(_G, "SELF", self)
+
+
+-- ----------------------------------------
+-- Public global function onSave
+
+Wrap.define_event("onSave")
+
+Wrap.wrap(_G, "onSave",
+   function(old_f)
+      old_f()
+      return Global.script_state
+   end
+)
+
+
+-- ================================================================================
+
+return { }
