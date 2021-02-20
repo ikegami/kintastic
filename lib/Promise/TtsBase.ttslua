@@ -105,7 +105,7 @@ function spawner(wrapped_function, args)
             args.callback_function = resolve
          end
 
-         spawned_object = wrapped_function(args)
+         spawned_obj = wrapped_function(args)
       end
    )
 
