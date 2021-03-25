@@ -16,7 +16,7 @@ local Wrap      = require("kintastic/lib/Wrap")
 -- Public global variable SELF
 --
 -- An alias for global var `self` to avoid conflicts
--- with local vars  and parameters named `self`.
+-- with local vars and parameters named `self`.
 
 TableLock.declare_and_set(_G, "SELF", self)
 
