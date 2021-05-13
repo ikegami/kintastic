@@ -1,11 +1,5 @@
 -- ================================================================================
 -- Table locking tools
---
--- This module is partially broken until TTS upgrades Moonsharp beyond 1.5.0.0.
--- A bug fixed in Moonsharp 1.6.0.0 is preventing `__newindex` from being used.
--- https://github.com/moonsharp-devs/moonsharp/issues/133
--- Until such a time, no check is performed on writes as doing so in a loop
--- can result in a mysterious "Unexpected LuaType Tuple" fatal error.
 -- ================================================================================
 
 -- Modules.
@@ -19,12 +13,6 @@ local TableLock = { }
 
 -- Constant.
 local hook = "__kintastic_TableLock"
-
-
--- ----------------------------------------
--- Disable functionality that runs afoul of a bug in Moonsharp <1.6.0.0. See module header for details.
-
-local buggy = _VERSION == "MoonSharp 1.5.0.0"
 
 
 -- ================================================================================
@@ -45,12 +33,14 @@ end
 -- - Note that TableLock.on_violation(msg) is also called if declare, declare_and_set or merge is misused.
 -- - The functions provided by the WarningHandlers module may be used here. They are re-exported by this module.
 --
--- TableLock.limited_functionality reports if functionality has been disabled to
--- avoid running afoul of a bug in Moonsharp <1.6.0.0. See module header for details.
+-- TableLock.limited_functionality reports if checks performed on writes are skipped to avoid
+-- a bug fixed in 1.6.0.0 that could result in a mysterious "Unexpected LuaType Tuple" fatal error.
+-- https://github.com/moonsharp-devs/moonsharp/issues/133
+-- Since TTS now uses a newer version of MoonSharp, this is always false.
 
 TableLock.if_dev = nil                               -- OBSOLETE. Use a custom on_violation instead.
 TableLock.on_violation = TableLock.fatal_violation   -- Editable.
-TableLock.limited_functionality = buggy              -- Read-only.
+TableLock.limited_functionality = false              -- Read-only.
 
 
 -- ----------------------------------------
@@ -143,16 +133,14 @@ function TableLock.lock(tbl)
          return old_index(t, k)
       end
 
-      if not buggy then
-         mt.__newindex = function(t, k, v)
-            if not self.declared[k] and self.enabled then
-               if not TableLock.on_violation("Undeclared write to " .. tostring(k)) then
-                  return
-               end
+      mt.__newindex = function(t, k, v)
+         if not self.declared[k] and self.enabled then
+            if not TableLock.on_violation("Undeclared write to " .. tostring(k)) then
+               return
             end
-
-            return old_newindex(t, k, v)
          end
+
+         return old_newindex(t, k, v)
       end
 
       self.hooked = true

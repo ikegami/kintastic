@@ -32,9 +32,6 @@ end
 -- - If Const.on_violation(msg) returns something false, the operationg will fail silently.
 -- - Note that Const.on_violation(msg) is also called if declare, declare_and_set or merge is misused.
 -- - The functions provided by the WarningHandlers module may be used here. They are re-exported by this module.
---
--- Const.limited_functionality reports if functionality has been disabled to
--- avoid running afoul of a bug in Moonsharp <1.6.0.0. See module header for details.
 
 Const.is_dev = false                         -- OBSOLETE. Use a custom on_violation instead.
 Const.on_violation = Const.fatal_violation   -- Editable.
