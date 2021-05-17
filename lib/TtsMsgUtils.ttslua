@@ -155,7 +155,7 @@ function TtsMsgUtils.pulse_obj(obj, color, opts)
          -- progress = e^(-128 (x - 0.5) ^ 4)
          -- A plot can found here:
          -- https://www.wolframalpha.com/input/?i=alpha+%3D+e%5E%28-128+%28x+-+0.5%29+%5E+4%29+from+0+to+1
-         -- In short, it favours the on state of the off state, and provides a smmoth transition between the two.
+         -- In short, it favours the on state and the off state, and provides a smooth transition between the two.
          local progress = step_num / num_steps_per_pulse - 0.5
          progress = progress * progress
          progress = progress * progress
