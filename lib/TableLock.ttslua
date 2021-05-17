@@ -55,7 +55,7 @@ function TableLock.declare(tbl, ...)
    local mt = getmetatable(tbl)
    local self = mt and mt[hook]
    if not self then
-      return
+      return tbl
    end
 
    local c = select("#", ...)
@@ -63,6 +63,8 @@ function TableLock.declare(tbl, ...)
       local k = select(i, ...)
       self.declared[k] = true
    end
+
+   return tbl
 end
 
 
