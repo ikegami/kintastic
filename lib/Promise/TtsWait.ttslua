@@ -112,6 +112,20 @@ end
 
 
 -- ----------------------------------------
+-- Public function TtsWait.frame
+--
+-- Like `TtsWait.frames`, but only wait one frame.
+
+function TtsWait.frame(value)
+   return Promise:new(
+      function(resolve, reject)
+         Wait.frames(||resolve(value), 1)
+      end
+   )
+end
+
+
+-- ----------------------------------------
 -- Public function TtsWait.frames_with_cancel
 --
 -- This function is identical to TtsWait.frames except a second value is returned.
