@@ -121,7 +121,7 @@ function TtsMsgUtils.pulse_obj(obj, color, opts)
    opts = opts or EMPTY_TABLE
 
    local pulse_dur          = opts.pulse_dur          or 1.2
-   local num_steps_per_edge = opts.num_steps_per_edge or 6
+   local num_steps_per_edge = opts.num_steps_per_edge or 12
    local num_pulses         = opts.num_pulses         or 4
 
    color = Color(color)
