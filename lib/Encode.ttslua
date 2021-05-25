@@ -25,13 +25,13 @@ function Encode.codepoints(s)
       end
 
       i = i + 1
-      local cp, cp2 = string.unicode(s, i, i+1)
-
-      if cp < 0xD800 then
+      local cp = string.unicode(s, i)
+      if cp < 0xD800 or cp >= 0xE000 then
          -- Not a surrogate.
          return cp
       elseif cp < 0xDC00 then
          -- High surrogate.
+         local cp2 = string.unicode(s, i+1)
          if cp2 == nil or cp2 < 0xDC00 or cp2 >= 0xE000 then
             -- High surrogate without following low surrogate.
             return 0xFFFD
@@ -39,17 +39,8 @@ function Encode.codepoints(s)
 
          i = i + 1
          return ( cp % 0x400 ) * 0x400 + ( cp2 % 0x400 ) + 0x10000
-      elseif cp < 0xE000 then
-         -- Low surrogate without preceding high surrogate.
-         return 0xFFFD
-      elseif cp < 0x10000 then
-         -- Not a surrogate.
-         return cp
-      elseif cp < 0x110000 then
-         -- Just in case!
-         return cp
       else
-         -- Outside of Unicode.
+         -- Low surrogate without preceding high surrogate.
          return 0xFFFD
       end
    end
