@@ -2,19 +2,49 @@ local Encode = require("kintastic/lib/Encode")
 
 local tests = { }
 
+local UFFFD      = string.char(0xFFFD)
+local UFFFD_utf8 = string.char(0xEF, 0xBF, 0xBD)
+
 for i, test in ipairs({
-   { "ASCII",       "abcde", string.char(0x61, 0x62, 0x63, 0x64, 0x65) },
-   { "latin-1",     "abcdé", string.char(0x61, 0x62, 0x63, 0x64, 0xC3, 0xA9) },
-   { "2-byte seq",  "abcdē", string.char(0x61, 0x62, 0x63, 0x64, 0xC4, 0x93) },
-   { "3-byte seq",  "abcdⱸ", string.char(0x61, 0x62, 0x63, 0x64, 0xE2, 0xB1, 0xB8) },
-   { "4-byte seq",  "abcd𐀁", string.char(0x61, 0x62, 0x63, 0x64, 0xF0, 0x90, 0x80, 0x81) },  -- These require surrogate pairs in Lua
-   { "Hi surrogate with no lo", string.char(0x61, 0xDC00, 0x61), string.char(0x61, 0xEF, 0xBF, 0xBD, 0x61) },
-   { "Lo surrogate with no hi", string.char(0x61, 0xD800, 0x61), string.char(0x61, 0xEF, 0xBF, 0xBD, 0x61) },
+   { "ASCII",                   "abcde",                       string.char(0x61, 0x62, 0x63, 0x64, 0x65)                   },
+   { "latin-1",                 "abcdé",                       string.char(0x61, 0x62, 0x63, 0x64, 0xC3, 0xA9)             },
+   { "2-byte seq",              "abcdē",                       string.char(0x61, 0x62, 0x63, 0x64, 0xC4, 0x93)             },
+   { "3-byte seq",              "abcdⱸ",                       string.char(0x61, 0x62, 0x63, 0x64, 0xE2, 0xB1, 0xB8)       },
+   { "4-byte seq",              "abcd𐀁",                       string.char(0x61, 0x62, 0x63, 0x64, 0xF0, 0x90, 0x80, 0x81) },  -- This requires a surrogate pair in Lua.
+   { "Hi surrogate with no lo", "a"..string.char(0xDC00).."a", "a"..UFFFD_utf8.."a"                                        },
+   { "Lo surrogate with no hi", "a"..string.char(0xD800).."a", "a"..UFFFD_utf8.."a"                                        },
 }) do
    local name, text, coded = unpack(test)
    table.insert(tests, {
       "encode " .. name,
       ||Encode.encode_utf8(text) == coded
+   })
+end
+
+for i, test in ipairs({
+   { "ASCII",                   string.char(0x61, 0x62, 0x63, 0x64, 0x65),                                "abcde"         },
+   { "latin-1",                 string.char(0x61, 0x62, 0x63, 0x64, 0xC3, 0xA9),                          "abcdé"         },
+   { "2-byte seq",              string.char(0x61, 0x62, 0x63, 0x64, 0xC4, 0x93),                          "abcdē"         },
+   { "3-byte seq",              string.char(0x61, 0x62, 0x63, 0x64, 0xE2, 0xB1, 0xB8),                    "abcdⱸ"         },
+   { "4-byte seq",              string.char(0x61, 0x62, 0x63, 0x64, 0xF0, 0x90, 0x80, 0x81),              "abcd𐀁"         },  -- This requires a surrogate pair in Lua.
+   { "5-byte seq",              string.char(0x61, 0xFA, 0x80, 0x80, 0x80, 0x80, 0x61),                    "a"..UFFFD.."a" },
+   { "6-byte seq",              string.char(0x61, 0xFD, 0x80, 0x80, 0x80, 0x80, 0x80, 0x61),              "a"..UFFFD.."a" },
+   { "FE",                      string.char(0x61, 0xFE, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x61),        "a"..UFFFD..UFFFD..UFFFD..UFFFD..UFFFD..UFFFD..UFFFD.."a" },
+   { "FF",                      string.char(0x61, 0xFF, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x61),  "a"..UFFFD..UFFFD..UFFFD..UFFFD..UFFFD..UFFFD..UFFFD..UFFFD.."a" },
+   { "Cont byte",               string.char(0x61, 0x80, 0x61),                                            "a"..UFFFD.."a" },
+   { "Missing cont byte",       string.char(0x61, 0xE2, 0xB1, 0x61),                                      "a"..UFFFD.."a" },
+   { "Premature end",           string.char(0x61, 0xE2, 0xB1),                                            "a"..UFFFD      },
+   { "2-byte overlong",         string.char(0x61, 0xC1, 0xBF, 0x61),                                      "a"..UFFFD.."a" },
+   { "3-byte overlong",         string.char(0x61, 0xE0, 0x9F, 0xBF, 0x61),                                "a"..UFFFD.."a" },
+   { "4-byte overlong",         string.char(0x61, 0xF0, 0x8F, 0xBF, 0xBF, 0x61),                          "a"..UFFFD.."a" },
+   { "Surrogate (D800)",        string.char(0x61, 0xED, 0xA0, 0x80, 0x61),                                "a"..UFFFD.."a" },
+   { "Surrogate (DFFF)",        string.char(0x61, 0xED, 0xBF, 0xBF, 0x61),                                "a"..UFFFD.."a" },
+   { "Outside Unicode",         string.char(0x61, 0xF4, 0x90, 0x80, 0x80, 0x61),                          "a"..UFFFD.."a" },
+}) do
+   local name, coded, text = unpack(test)
+   table.insert(tests, {
+      "decode " .. name,
+      ||Encode.decode_utf8(coded) == text
    })
 end
 

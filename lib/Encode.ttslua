@@ -86,8 +86,89 @@ end
 -- ----------------------------------------
 -- Public function Encode.decode_utf8
 
+local num_most_significant_ones = {
+   --[[ 80 ]]   [0]=1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+   --[[ 90 ]]       1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+   --[[ A0 ]]       1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+   --[[ B0 ]]       1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,
+   --[[ C0 ]]       2, 2, 2, 2, 2, 2, 2, 2,   2, 2, 2, 2, 2, 2, 2, 2,
+   --[[ D0 ]]       2, 2, 2, 2, 2, 2, 2, 2,   2, 2, 2, 2, 2, 2, 2, 2,
+   --[[ E0 ]]       3, 3, 3, 3, 3, 3, 3, 3,   3, 3, 3, 3, 3, 3, 3, 3,
+   --[[ F0 ]]       4, 4, 4, 4, 4, 4, 4, 4,   5, 5, 5, 5, 6, 6, 7, 8
+}
+
+local lead_byte_data_mask = {
+   [2] = 0x1F,
+   [3] = 0x0F,
+   [4] = 0x07,
+   [5] = 0x03,
+   [6] = 0x01,
+}
+
+local min_by_seq_len = {
+   [2] = 0x80,
+   [3] = 0x800,
+   [4] = 0x10000,
+   [5] = 9^9^9,
+   [6] = 9^9^9,
+}
+
 function Encode.decode_utf8(s)
-   error("Not yet implemented")  -- TODO
+   local i = 1
+   local len = #s
+
+   local function decode_single_utf8()
+      local lead = string.unicode(s, i)
+      i = i + 1
+
+      if lead < 0x80 then
+         return lead
+      end
+
+      local seq_len = num_most_significant_ones[ lead - 0x80 ];
+      if seq_len == 1 or seq_len > 6 then
+      end
+
+      local mask = lead_byte_data_mask[seq_len]
+      if not mask then
+         return 0xFFFD
+      end
+
+      local cp = bit32.band(lead, mask)
+      for j = 1, seq_len-1 do
+         if i > len then
+            return 0xFFFD
+         end
+
+         local byte = string.unicode(s, i)
+         if byte == nil or bit32.band(byte, 0xC0) ~= 0x80 then
+            return 0xFFFD
+         end
+
+         i = i + 1
+         cp = bit32.lshift(cp, 6) + bit32.band(byte, 0x3F)
+      end
+
+      if cp < min_by_seq_len[seq_len] or ( cp >= 0xD800 and cp < 0xE000 ) or cp >= 0x10FFFF then
+         return 0xFFFD
+      end
+
+      return cp
+   end
+
+   local out = { }
+   while i <= len do
+      local cp = decode_single_utf8()
+      if cp >= 0x10000 then
+         cp = cp - 0x10000
+         table.insert(out, string.char(0xD800 + bit32.rshift(cp, 10)))
+         table.insert(out, string.char(0xDC00 + bit32.band(cp, 0x3FF)))
+      else
+         table.insert(out, string.char(cp))
+      end
+   end
+
+   return table.concat(out, "")
 end
 
 
